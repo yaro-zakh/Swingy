@@ -8,14 +8,13 @@ import ua.yzcorp.model.ArcadeMap;
 import ua.yzcorp.model.ClassHero;
 import ua.yzcorp.model.Hero;
 import ua.yzcorp.model.Hero.HeroBuilder;
-import java.sql.Connection;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Console {
-	public static HeroManager heroManager = new HeroManager();
+	private static HeroManager heroManager = new HeroManager();
 	public static void start() {
 		Hero hero;
 
@@ -26,11 +25,10 @@ public class Console {
 		while (scanner.hasNextLine()) {
 			String tmp = scanner.nextLine();
 			heroManager.startListener(tmp);
-			hero = heroManager.getHero();
-			if (hero != null) {
-				Message.print(hero.toString());		//print full info about Hero
+			if (Glob.hero != null) {
+				Message.print(Glob.hero.toString());		//print full info about Hero
 				Message.startGame();
-				arcadeMap = new ArcadeMap(hero);
+				arcadeMap = new ArcadeMap();
 				arcadeMap.startGame();
 			}
 		}

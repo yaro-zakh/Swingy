@@ -6,8 +6,10 @@ import ua.yzcorp.view.Message;
 
 import java.util.*;
 
+import static ua.yzcorp.controller.Glob.hero;
+
+
 public class ArcadeMap {
-	private Hero hero;
 	private List<Enemy> enemies;
 	private List<Artifacts> artifacts;
 	private char [][] arcadeMap;
@@ -16,10 +18,9 @@ public class ArcadeMap {
 	private char asciiHero = '⛹';
 	private char asciiEmpty = '⛶';
 
-	public ArcadeMap(Hero hero) {
+	public ArcadeMap() {
 		EnemyManager enemyManager = new EnemyManager();
 		ArtifactsManager artifactsManager = new ArtifactsManager();
-		this.hero = hero;
 		this.enemies = enemyManager.getAllTarget();
 		this.artifacts = artifactsManager.getAllTarget();
 	}
@@ -170,8 +171,8 @@ public class ArcadeMap {
 			dropItem(i);
 			if (hero.getExp() >= mustLvl) {
 				hero.setLevel(hero.getLevel() + 1);
-				this.hero = Console.getHero(hero.getClassHero(), hero.getName(), hero.getLevel(), hero.getExp(), hero, 10);
-				this.hero.updateAllStat();
+				hero = Console.getHero(hero.getClassHero(), hero.getName(), hero.getLevel(), hero.getExp(), hero, 10);
+				hero.updateAllStat();
 				heroManager.updateHero(hero, ConnectSQL.getConnection());
 				Message.levelUp();
 				Message.print(hero.toString());

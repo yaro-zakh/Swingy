@@ -12,12 +12,7 @@ import java.util.List;
 
 public class HeroManager implements Manager<Hero> {
 
-	public Hero hero = null;
 	public HeroManager() {
-	}
-
-	public Hero getHero() {
-		return hero;
 	}
 
 	public void startListener(String text) {
@@ -28,7 +23,7 @@ public class HeroManager implements Manager<Hero> {
 				Message.print("You have successfully created a new hero");
 				break;
 			case "choose":
-				hero = Console.chooseHero();
+				Glob.hero = Console.chooseHero();
 				break;
 			case "exit":
 				Message.goodBye();
