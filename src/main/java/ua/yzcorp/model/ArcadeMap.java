@@ -31,15 +31,46 @@ public class ArcadeMap {
 	}
 
 	private void createRandomEnemies() {
-		int howMatch = (int) (Math.pow(size, 2) / 2);
-		int[] tmpPos = new int[2];
-		Enemy tmpEnemy;
-		Random random = new Random();
+		int		howMatch = (int) (Math.pow(size, 2) / 2);
+		Enemy	tmpEnemy;
+		int		tmpSizeSet;
+		Random	random = new Random();
+		class	Pos {
+			private int[] tmpPos;
+
+			private Pos(int[] tmpPos) {
+				this.tmpPos = tmpPos;
+			}
+
+			private int[] getTmpPos() {
+				return tmpPos;
+			}
+
+			@Override
+			public boolean equals(Object o) {
+				if (this == o) return true;
+				if (o == null || getClass() != o.getClass()) return false;
+				Pos pos = (Pos) o;
+				return Arrays.equals(tmpPos, pos.tmpPos);
+			}
+
+			@Override
+			public int hashCode() {
+				return Arrays.hashCode(tmpPos);
+			}
+		}
+		Set<Pos>	uniqueCoor = new HashSet<>();
+		Pos			tmpPos = null;
 		for (int i = 0; i < howMatch; i++) {
-			tmpPos[0] = random.nextInt(size);
-			tmpPos[1] = random.nextInt(size);
+			tmpSizeSet = uniqueCoor.size();
+			System.out.println("-->tmp" + tmpSizeSet);
+			while (tmpSizeSet == uniqueCoor.size()) {
+				tmpPos = new Pos(new int[] {random.nextInt(size), random.nextInt(size)});
+				uniqueCoor.add(tmpPos);
+				System.out.println(uniqueCoor.size());
+			}
 			tmpEnemy = Enemy.newInstance(defaultEnemies.get(random.nextInt(defaultEnemies.size())));
-			tmpEnemy.setEnemyPos(tmpPos);
+			tmpEnemy.setEnemyPos(tmpPos.getTmpPos());
 			mapEnemies.add(tmpEnemy);
 		}
 	}

@@ -21,7 +21,7 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
 
 public class Gui {
@@ -49,6 +49,8 @@ public class Gui {
 	private static BufferedImage enemyImage;
 	private static Image image;
 	private static ArcadeMap arcadeMap;
+	private static String[] levelEnemy;
+	private static int imageSize;
 
 
 	public static void start() {
@@ -76,53 +78,29 @@ public class Gui {
 				super.run();
 				arcadeMap = new ArcadeMap();
 				int mapSize = arcadeMap.getSize();
-				String levelEnemy;
-				int imageSize = frame.getWidth() / mapSize;
+				imageSize = frame.getWidth() / mapSize;
 				heroPos = new int[]{Math.round(mapSize / 2), Math.round(mapSize / 2)};
 				heroImage = ImageIO.read(new File(Glob.PIC + hero.getClassHero().toLowerCase() + ".png"));
 				panelMap.setLayout(new GridLayout(mapSize, mapSize, 2, 2));
 				cell = new JPanel[mapSize][mapSize];
-				for (int i = 0; i < cell.length; i++) {
-					for (int j = 0; j < cell[i].length; j++) {
-						cell[i][j] = new JPanel();
-						cell[i][j].setLayout(new BorderLayout());
-						levelEnemy = findEnemy(new int[] {i, j});
-						if (levelEnemy != null && !Arrays.equals(heroPos, new int[]{i, j})) {
-							enemyImage = ImageIO.read(new File(Glob.PIC + levelEnemy + ".png"));
-							image = enemyImage.getScaledInstance(imageSize, imageSize, Image.SCALE_REPLICATE);
-							JLabel picLabel = new JLabel(new ImageIcon(image));
-							cell[i][j].add(picLabel, BorderLayout.CENTER);
-							cell[i][j].setBackground(new Color(255, 255, 255, 100));
-						} else if (Arrays.equals(heroPos, new int[]{i, j})) {
-							image = heroImage.getScaledInstance(imageSize, imageSize, Image.SCALE_REPLICATE);
-							JLabel picLabel = new JLabel(new ImageIcon(image));
-							cell[i][j].add(picLabel, BorderLayout.CENTER);
-							cell[i][j].setBackground(new Color(0, 0, 0, 0));
-						} else {
-							cell[i][j].setBackground(new Color(255, 255, 255, 100));
-						}
-						cell[i][j].addMouseListener(new moveListener());
-						panelMap.add(cell[i][j]);
-					}
-				}
+				updateMap();
 				mainPanel.setVisible(false);
 				frame.getContentPane().add(panelMap, BorderLayout.CENTER);
-				panelMap.setVisible(true);
 
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
+	}
 
-		private String findEnemy(int[] ints) {
-			List<Enemy> allEnemies = arcadeMap.getMapEnemies();
-			for (Enemy enemy: allEnemies) {
-				if (Arrays.equals(enemy.getEnemyPos(), ints)) {
-					return String.valueOf(enemy.getLevel());
-				}
+	private static String[] findEnemy(int[] ints) {
+		List<Enemy> allEnemies = arcadeMap.getMapEnemies();
+		for (int i = 0; i < allEnemies.size(); i++) {
+			if (Arrays.equals(allEnemies.get(i).getEnemyPos(), ints)) {
+				return new String[] {String.valueOf(i), String.valueOf(allEnemies.get(i).getLevel())};
 			}
-			return null;
 		}
+		return null;
 	}
 
 	private static void initAllComp() {
@@ -194,29 +172,71 @@ public class Gui {
 		panelTableChoose.setVisible(false);
 	}
 
-	public static class moveListener implements MouseListener {
+	public static void updateMap() {
+		try {
+			panelMap.setVisible(false);
+			panelMap.removeAll();
+			for (int i = 0; i < cell.length; i++) {
+				for (int j = 0; j < cell[i].length; j++) {
+					cell[i][j] = new JPanel();
+					cell[i][j].setLayout(new BorderLayout());
+					levelEnemy = findEnemy(new int[] {i, j});
+					if (levelEnemy != null && !Arrays.equals(heroPos, new int[]{i, j})) {
+						enemyImage = ImageIO.read(new File(Glob.PIC + levelEnemy[1] + ".png"));
+						image = enemyImage.getScaledInstance(imageSize, imageSize, Image.SCALE_REPLICATE);
+						JLabel picLabel = new JLabel(new ImageIcon(image));
+						cell[i][j].add(picLabel, BorderLayout.CENTER);
+						cell[i][j].setBackground(new Color(255, 255, 255, 100));
+					} else if (Arrays.equals(heroPos, new int[]{i, j})) {
+						image = heroImage.getScaledInstance(imageSize, imageSize, Image.SCALE_REPLICATE);
+						JLabel picLabel = new JLabel(new ImageIcon(image));
+						cell[i][j].add(picLabel, BorderLayout.CENTER);
+						cell[i][j].setBackground(new Color(0, 0, 0, 0));
+					} else {
+						cell[i][j].setBackground(new Color(255, 255, 255, 100));
+					}
+					cell[i][j].addMouseListener(new moveListener());
+					panelMap.add(cell[i][j]);
+				}
+			}
+			panelMap.setVisible(true);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+	}
+
+	public static class moveListener extends MouseAdapter {
 		@Override
 		public void mouseClicked(MouseEvent e) {
-			cell[4][4].setBackground(Color.blue);
+			JPanel clicked = (JPanel) e.getSource();
+			mainLoop: for (int i = 0; i < cell.length; i++) {
+				for (int j = 0; j < cell[i].length ; j++) {
+					if (cell[i][j] == clicked) {
+						if (i == heroPos[0] && j == heroPos[1] - 1) {
+							setNewPosHero(new int[] {i, j});
+							break mainLoop;
+						} else if (i == heroPos[0] && j == heroPos[1] + 1) {
+							setNewPosHero(new int[] {i, j});
+							break mainLoop;
+						} else if (i == heroPos[0] - 1 && j == heroPos[1]) {
+							setNewPosHero(new int[] {i, j});
+							break mainLoop;
+						} else if (i == heroPos[0] + 1 && j == heroPos[1]) {
+							setNewPosHero(new int[] {i, j});
+							break mainLoop;
+						}
+					}
+				}
+			}
 		}
-
-		@Override
-		public void mousePressed(MouseEvent e) {
-		}
-
-		@Override
-		public void mouseReleased(MouseEvent e) {
-
-		}
-
-		@Override
-		public void mouseEntered(MouseEvent e) {
-
-		}
-
-		@Override
-		public void mouseExited(MouseEvent e) {
-
+		public void setNewPosHero(int[] newPos) {
+			String levelEnemy[] = findEnemy(newPos);
+			if (levelEnemy != null) {
+				arcadeMap.getMapEnemies().remove(Integer.parseInt(levelEnemy[0]));
+			}
+			heroPos[0] = newPos[0];
+			heroPos[1] = newPos[1];
+			updateMap();
 		}
 	}
 
