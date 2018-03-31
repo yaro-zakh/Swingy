@@ -2,18 +2,58 @@ package ua.yzcorp.model;
 
 import ua.yzcorp.controller.Glob;
 
-public class Enemy {
+import java.io.Serializable;
+
+public class Enemy implements Serializable {
 	private String	name;
 	private int		attack;
 	private int		HP;
 	private int		level;
 	private char	ascii;
+	private int[]	enemyPos = new int[2];
 
 	public Enemy(String name, int attack, int HP, int level, char ascii) {
 		this.name = name;
 		this.attack = attack;
 		this.HP = HP;
 		this.level = level;
+		this.ascii = ascii;
+	}
+
+	public static Enemy newInstance(Enemy copyEnemy) {
+		return new Enemy(copyEnemy.getName(),
+						copyEnemy.getAttack(),
+						copyEnemy.getHP(),
+						copyEnemy.getLevel(),
+						copyEnemy.getAscii());
+	}
+
+	public int[] getEnemyPos() {
+		return enemyPos;
+	}
+
+	public void setEnemyPos(int[] enemyPos) {
+		this.enemyPos[0] = enemyPos[0];
+		this.enemyPos[1] = enemyPos[1];
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setAttack(int attack) {
+		this.attack = attack;
+	}
+
+	public void setHP(int HP) {
+		this.HP = HP;
+	}
+
+	public void setLevel(int level) {
+		this.level = level;
+	}
+
+	public void setAscii(char ascii) {
 		this.ascii = ascii;
 	}
 

@@ -14,6 +14,7 @@ public class Hero {
 	private int			def;
 	private int			HP;
 	private int			CC;
+	public static int[]		heroPos = new int[2];
 	private Artifacts	artifacts;
 
 	public Hero(String name, String classHero, int level, int exp, int attack, int def, int HP, int CC, Artifacts artifacts) {
@@ -34,6 +35,10 @@ public class Hero {
 				updateStat(entry.getKey().toLowerCase(), entry.getValue());
 			}
 		}
+	}
+
+	public int[] getHeroPos() {
+		return heroPos;
 	}
 
 	public void updateStat(String key, Item item) {
