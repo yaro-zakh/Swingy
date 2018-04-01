@@ -11,4 +11,5 @@ public class Glob {
 	public static String RED = Run.GUI == 0 ? "\033[0;31m" : "❲";
 	public static String RESET = Run.GUI == 0 ? "\033[0m" : "❳";
 	public static Hero hero;
+	public static StringBuilder inform;
 }

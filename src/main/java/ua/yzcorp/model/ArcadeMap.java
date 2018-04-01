@@ -18,6 +18,7 @@ public class ArcadeMap {
 	private int size;
 	private char asciiHero = '⛹';
 	private char asciiEmpty = '⛶';
+	private String randomDrop;
 
 	public ArcadeMap() {
 		mapEnemies = new LinkedList<>();
@@ -100,6 +101,14 @@ public class ArcadeMap {
 
 	public void setSize(int size) {
 		this.size = size;
+	}
+
+	public String getRandomDrop() {
+		return randomDrop;
+	}
+
+	public void setRandomDrop(String randomDrop) {
+		this.randomDrop = randomDrop;
 	}
 
 	public void startGame() {
@@ -198,11 +207,21 @@ public class ArcadeMap {
 
 	private void editMap() {
 		if(findCollision()) {
-			if (!startFight()) {
+			int i = 0;
+			for (; defaultEnemies.get(i).getAscii() != arcadeMap[heroPos[0]][heroPos[1]]; i++);
+			if (!startFight(defaultEnemies.get(i))) {
+				Message.print(Glob.inform.toString());
 				Message.gameOver();
 				this.arcadeMap[heroPos[0]][heroPos[1]] = '☠';
 				printArcadeMap(false);
 				Console.start();
+			} else {
+				dropItem(defaultEnemies.get(i));
+			}
+			if (levelUp()) {
+				Message.levelUp();
+				Message.print(hero.toString());
+				setNewMap(hero.getLevel());
 			}
 		}
 		if (heroPos[1] == 0 || heroPos[1] == arcadeMap.length - 1 ||
@@ -215,7 +234,7 @@ public class ArcadeMap {
 		printArcadeMap(true);
 	}
 
-	private boolean startFight() {
+/*	private boolean startFight() {
 		HeroManager heroManager = new HeroManager();
 		Random random = new Random();
 		int i = 0;
@@ -257,11 +276,24 @@ public class ArcadeMap {
 			}
 		}
 		return true;
+	}*/
+
+	public int calculateExp(Enemy enemy) {
+		double x = (double) enemy.getLevel() / (double) hero.getLevel();
+		double z = x == 1 && hero.getLevel() != 1 ? x + 1 : x;
+		double y = (double) hero.getLevel() / z;
+		return (int) Math.round(1000 / (y + x));
 	}
 
-	private static boolean startF(Enemy enemy) {
-		HeroManager heroManager = new HeroManager();
+	public double calculateDamage(Enemy enemy) {
+		double x = enemy.getAttack();
+		double y = hero.getDef();
+		return Math.round(x / y);
+	}
+
+	public boolean startFight(Enemy enemy) {
 		Random random = new Random();
+		Glob.inform = new StringBuilder();
 		int tmpHp = enemy.getHP();
 		int tmpAttack;
 		while (hero.getHP() > 0 && tmpHp > 0) {
@@ -271,58 +303,87 @@ public class ArcadeMap {
 				tmpAttack *= 2;
 			}
 			tmpHp -= tmpAttack;
-			Message.print(Glob.GREEN + hero.getName() + Glob.RESET + " inflicted " + Glob.GREEN + tmpAttack + Glob.RESET +
-					" damage to " + Glob.RED + enemy.getName() + Glob.RESET);
+			Glob.inform.append(Glob.GREEN).append(hero.getName()).append(Glob.RESET).append(" inflicted ").
+					append(Glob.GREEN).append(tmpAttack).append(Glob.RESET).append(" damage to ").
+					append(Glob.RED).append(enemy.getName()).append(Glob.RESET).append("\n");
 			if (tmpHp > 0) {
 				int damage = (int) calculateDamage(enemy);
 				hero.setHP(hero.getHP() - damage);
-				Message.print(Glob.RED + enemy.getName() + Glob.RESET + " inflicted " + Glob.RED +
-						damage + Glob.RESET + " damage to " + Glob.GREEN + hero.getName() + Glob.RESET);
+				Glob.inform.append(Glob.RED).append(enemy.getName()).append(Glob.RESET).append(" inflicted ").
+						append(Glob.RED).append(damage).append(Glob.RESET).append(" damage to ").
+						append(Glob.GREEN).append(hero.getName()).append(Glob.RESET).append("\n");
+			}
+		}
+		if (hero.getHP() <= 0) {
+			return false;
+		} else {
+			int exp = calculateExp(enemy);
+			hero.setExp(hero.getExp() + exp);
+			Glob.inform.append("\nYou won and got ").append(Glob.BLUE).append(exp).append(Glob.RESET).append(" experiences").append("\n\n");
+		}
+		return true;
+	}
+
+	public boolean levelUp() {
+		HeroManager heroManager = new HeroManager();
+		int mustLvl = (int) (hero.getLevel() * 1000 + Math.pow(hero.getLevel() - 1, 2) * 450);
+		if (hero.getExp() >= mustLvl) {
+			hero.setLevel(hero.getLevel() + 1);
+			hero = Console.getHero(hero.getClassHero(), hero.getName(), hero.getLevel(), hero.getExp(), hero, 10);
+			hero.updateAllStat();
+			heroManager.updateHero(hero, ConnectSQL.getConnection());
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public void dropItem(Enemy enemy) {
+		String[] items = {"Weapon", "Armor", "Helm"};
+		Random random = new Random();
+		int randChoose = random.nextInt(items.length);
+		randomDrop = items[randChoose];
+		Glob.inform.append(Glob.GR_BOLD).append("Your DROP is:").append(Glob.RESET).append("\n").append(artifacts.get(enemy.getLevel() - 1).toString(randomDrop)).append("\n");
+		if (Run.GUI == 1) {
+			Glob.inform.append("Pick up drop?");
+		}
+		if (Run.GUI == 0) {
+			Message.print(Glob.inform.toString());
+			Message.print("Pick up drop: " + Glob.GREEN + "YES" + Glob.RESET + " or " + Glob.GREEN + "NO" + Glob.RESET);
+			Scanner scanner = new Scanner(System.in);
+			String line = scanner.nextLine();
+			while (line != null || scanner.hasNextLine()) {
+				switch (line.toLowerCase()) {
+					case "yes":
+						pickUpDrop(enemy, randomDrop);
+						/*Item value = hero.getArtifacts().getArtifacts().get(items[randChoose].toLowerCase());
+						if (value == null) {
+							hero.getArtifacts().addNewItem(enemy.getLevel(), items[randChoose].toLowerCase());
+							hero.updateStat(items[randChoose].toLowerCase(), artifacts.get(enemy.getLevel() - 1).getArtifacts().get(items[randChoose]));
+						} else if (value.getPoint() < artifacts.get(enemy.getLevel() - 1).getArtifacts().get(items[randChoose]).getPoint()) {
+							hero.getArtifacts().addNewItem(enemy.getLevel(), items[randChoose].toLowerCase());
+							hero.updateStat(items[randChoose].toLowerCase(), artifacts.get(enemy.getLevel() - 1).getArtifacts().get(items[randChoose]));
+						}*/
+					case "no":
+						return;
+					default:
+						Message.print("Select " + Glob.GREEN + "YES" + Glob.RESET +
+								" or " + Glob.GREEN + "NO" + Glob.RESET + ".");
+						line = scanner.nextLine();
+						break;
+				}
 			}
 		}
 	}
 
-	private static double calculateDamage(Enemy enemy) {
-		double x = enemy.getAttack();
-		double y = hero.getDef();
-		return Math.round(x / y);
-	}
-
-	private int calculateExp(Enemy) {
-		double x = (double) defaultEnemies.get(i).getLevel() / (double) hero.getLevel();
-		double z = x == 1 && hero.getLevel() != 1 ? x + 1 : x;
-		double y = (double) hero.getLevel() / z;
-		return (int) Math.round(1000 / (y + x));
-	}
-
-	private void dropItem(int i) {
-		String[] items = {"Weapon", "Armor", "Helm"};
-		Random random = new Random();
-		Scanner scanner = new Scanner(System.in);
-		int randChoose = random.nextInt(items.length);
-		Message.print(Glob.GR_BOLD + "DROP:\n" + Glob.RESET +
-				artifacts.get(defaultEnemies.get(i).getLevel() - 1).toString(items[randChoose]));
-		Message.print("Pick up drop: " + Glob.GREEN + "YES" + Glob.RESET + " or " + Glob.GREEN + "NO" + Glob.RESET);
-		String line = scanner.nextLine();
-		while (line != null || scanner.hasNextLine()) {
-			switch (line.toLowerCase()) {
-				case "yes":
-					Item value = hero.getArtifacts().getArtifacts().get(items[randChoose].toLowerCase());
-					if (value == null) {
-						hero.getArtifacts().addNewItem(defaultEnemies.get(i).getLevel(), items[randChoose].toLowerCase());
-						hero.updateStat(items[randChoose].toLowerCase(), artifacts.get(defaultEnemies.get(i).getLevel() - 1).getArtifacts().get(items[randChoose]));
-					} else if (value.getPoint() < artifacts.get(defaultEnemies.get(i).getLevel() - 1).getArtifacts().get(items[randChoose]).getPoint()) {
-						hero.getArtifacts().addNewItem(defaultEnemies.get(i).getLevel(), items[randChoose].toLowerCase());
-						hero.updateStat(items[randChoose].toLowerCase(), artifacts.get(defaultEnemies.get(i).getLevel() - 1).getArtifacts().get(items[randChoose]));
-					}
-				case "no":
-					return;
-				default:
-					Message.print("Select " + Glob.GREEN + "YES" + Glob.RESET +
-							" or " + Glob.GREEN + "NO" + Glob.RESET + ".");
-					line = scanner.nextLine();
-					break;
-			}
+	public void pickUpDrop(Enemy enemy, String rand) {
+		Item value = hero.getArtifacts().getArtifacts().get(rand.toLowerCase());
+		if (value == null) {
+			hero.getArtifacts().addNewItem(enemy.getLevel(), rand.toLowerCase());
+			hero.updateStat(rand.toLowerCase(), artifacts.get(enemy.getLevel() - 1).getArtifacts().get(rand));
+		} else if (value.getPoint() < artifacts.get(enemy.getLevel() - 1).getArtifacts().get(rand).getPoint()) {
+			hero.getArtifacts().addNewItem(enemy.getLevel(), rand.toLowerCase());
+			hero.updateStat(rand.toLowerCase(), artifacts.get(enemy.getLevel() - 1).getArtifacts().get(rand));
 		}
 	}
 
