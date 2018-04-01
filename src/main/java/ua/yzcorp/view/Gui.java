@@ -51,6 +51,7 @@ public class Gui {
 	private static ArcadeMap arcadeMap;
 	private static String[] levelEnemy;
 	private static int imageSize;
+	private static int mapSize;
 
 
 	public static void start() {
@@ -77,9 +78,8 @@ public class Gui {
 			try {
 				super.run();
 				arcadeMap = new ArcadeMap();
-				int mapSize = arcadeMap.getSize();
+				mapSize = arcadeMap.getSize();
 				imageSize = frame.getWidth() / mapSize;
-				heroPos = new int[]{Math.round(mapSize / 2), Math.round(mapSize / 2)};
 				heroImage = ImageIO.read(new File(Glob.PIC + hero.getClassHero().toLowerCase() + ".png"));
 				panelMap.setLayout(new GridLayout(mapSize, mapSize, 2, 2));
 				cell = new JPanel[mapSize][mapSize];
@@ -232,11 +232,45 @@ public class Gui {
 		public void setNewPosHero(int[] newPos) {
 			String levelEnemy[] = findEnemy(newPos);
 			if (levelEnemy != null) {
-				arcadeMap.getMapEnemies().remove(Integer.parseInt(levelEnemy[0]));
+				try {
+					enemyImage = ImageIO.read(new File(Glob.PIC + levelEnemy[1] + ".png"));
+					image = enemyImage.getScaledInstance(imageSize, imageSize, Image.SCALE_REPLICATE);
+					Object[] options = {"Fight", "Run"};
+					int choose = JOptionPane.showOptionDialog(null,
+							arcadeMap.getMapEnemies().get(Integer.parseInt(levelEnemy[0])).toString(),
+							"Information about the enemy", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+							new ImageIcon(image), options, options[0]);
+					arcadeMap.getMapEnemies().remove(Integer.parseInt(levelEnemy[0]));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
+			panelMap.setVisible(false);
+			panelMap.remove(newPos[0] * mapSize + newPos[1]);
+			panelMap.add(heroCell(), newPos[0] * mapSize + newPos[1]);
+			panelMap.remove(heroPos[0] * mapSize + heroPos[1]);
+			panelMap.add(emptyCell(), heroPos[0] * mapSize + heroPos[1]);
 			heroPos[0] = newPos[0];
 			heroPos[1] = newPos[1];
-			updateMap();
+			panelMap.setVisible(true);
+		}
+
+		private JPanel emptyCell() {
+			JPanel empty = new JPanel();
+			empty.setBackground(new Color(255, 255, 255, 100));
+			empty.addMouseListener(new moveListener());
+			cell[heroPos[0]][heroPos[1]] = empty;
+			return empty;
+		}
+
+		private JPanel heroCell() {
+			JPanel hero = new JPanel();
+			hero.setLayout(new BorderLayout());
+			image = heroImage.getScaledInstance(imageSize, imageSize, Image.SCALE_REPLICATE);
+			JLabel picLabel = new JLabel(new ImageIcon(image));
+			hero.add(picLabel, BorderLayout.CENTER);
+			hero.setBackground(new Color(0, 0, 0, 0));
+			return hero;
 		}
 	}
 
@@ -252,11 +286,11 @@ public class Gui {
 				} else if (((JButton) e.getSource()).getText().equals("Save")) {
 					nameHero = nameHeroTextField.getText();
 					if (nameHero == null || nameHero.isEmpty()) {
-						JOptionPane.showMessageDialog(null, heroManager.emptyName());
+						JOptionPane.showMessageDialog(null, heroManager.emptyName(), "Error", JOptionPane.ERROR_MESSAGE);
 					} else if (!HeroManager.checkName(nameHero)) {
-						JOptionPane.showMessageDialog(null, heroManager.existsName());
+						JOptionPane.showMessageDialog(null, heroManager.existsName(), "Error", JOptionPane.ERROR_MESSAGE);
 					} else if (classHero == null || classHero.isEmpty()) {
-						JOptionPane.showMessageDialog(null, "Choose a hero class");
+						JOptionPane.showMessageDialog(null, "Choose a hero class", "Warning", JOptionPane.WARNING_MESSAGE);
 					} else {
 						hero = Console.getHero(classHero, nameHero, 1, 0, null, 0);
 						heroManager.save(hero, ConnectSQL.getConnection());

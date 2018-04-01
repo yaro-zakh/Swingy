@@ -114,8 +114,7 @@ public class Enemy implements Serializable {
 
 	@Override
 	public String toString() {
-		return "My name is " + name + ". Tremble in front of me!\n" +
-				Glob.RED + name + Glob.RESET +" stat:\n" +
+		return "My name is " + Glob.RED + name + Glob.RESET + ". Tremble in front of me!\n" +
 				""+ Glob.GREEN + "Level: " + Glob.RESET + "" + level + "\n" +
 				"" + Glob.GREEN + "ATK  : " + Glob.RESET + "" + attack + "\n" +
 				"" + Glob.GREEN + "HP   : " + Glob.RESET + "" + HP;

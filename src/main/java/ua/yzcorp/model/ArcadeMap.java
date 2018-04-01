@@ -5,6 +5,7 @@ import ua.yzcorp.view.Console;
 import ua.yzcorp.view.Message;
 
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 import static ua.yzcorp.controller.Glob.hero;
@@ -27,6 +28,7 @@ public class ArcadeMap {
 		this.defaultEnemies = enemyManager.getAllTarget();
 		this.artifacts = artifactsManager.getAllTarget();
 		this.size = (hero.getLevel() - 1) * 5 + 10 - (hero.getLevel() % 2);
+		heroPos = new int[]{Math.round(size / 2), Math.round(size / 2)};
 		createRandomEnemies();
 	}
 
@@ -58,17 +60,25 @@ public class ArcadeMap {
 			public int hashCode() {
 				return Arrays.hashCode(tmpPos);
 			}
+
+			@Override
+			public String toString() {
+				return "Pos{" +
+						"tmpPos=" + tmpPos[0] + ":" + tmpPos[1] +
+						'}';
+			}
 		}
 		Set<Pos>	uniqueCoor = new HashSet<>();
 		Pos			tmpPos = null;
 		for (int i = 0; i < howMatch; i++) {
 			tmpSizeSet = uniqueCoor.size();
-			System.out.println("-->tmp" + tmpSizeSet);
 			while (tmpSizeSet == uniqueCoor.size()) {
 				tmpPos = new Pos(new int[] {random.nextInt(size), random.nextInt(size)});
-				uniqueCoor.add(tmpPos);
-				System.out.println(uniqueCoor.size());
+				if (!Arrays.equals(tmpPos.getTmpPos(), heroPos)) {
+					uniqueCoor.add(tmpPos);
+				}
 			}
+			System.out.println(tmpPos.toString());
 			tmpEnemy = Enemy.newInstance(defaultEnemies.get(random.nextInt(defaultEnemies.size())));
 			tmpEnemy.setEnemyPos(tmpPos.getTmpPos());
 			mapEnemies.add(tmpEnemy);
