@@ -76,7 +76,6 @@ public class ArcadeMap {
 					uniqueCoor.add(tmpPos);
 				}
 			}
-			System.out.println(tmpPos.toString());
 			tmpEnemy = Enemy.newInstance(defaultEnemies.get(random.nextInt(defaultEnemies.size())));
 			tmpEnemy.setEnemyPos(tmpPos.getTmpPos());
 			mapEnemies.add(tmpEnemy);
@@ -260,13 +259,36 @@ public class ArcadeMap {
 		return true;
 	}
 
-	private double calculateDamage(int i) {
-		double x = defaultEnemies.get(i).getAttack();
+	private static boolean startF(Enemy enemy) {
+		HeroManager heroManager = new HeroManager();
+		Random random = new Random();
+		int tmpHp = enemy.getHP();
+		int tmpAttack;
+		while (hero.getHP() > 0 && tmpHp > 0) {
+			tmpAttack = hero.getAttack();
+			int criticalChance = Math.round(100 / hero.getCC());
+			if (random.nextInt(criticalChance) == 0) {
+				tmpAttack *= 2;
+			}
+			tmpHp -= tmpAttack;
+			Message.print(Glob.GREEN + hero.getName() + Glob.RESET + " inflicted " + Glob.GREEN + tmpAttack + Glob.RESET +
+					" damage to " + Glob.RED + enemy.getName() + Glob.RESET);
+			if (tmpHp > 0) {
+				int damage = (int) calculateDamage(enemy);
+				hero.setHP(hero.getHP() - damage);
+				Message.print(Glob.RED + enemy.getName() + Glob.RESET + " inflicted " + Glob.RED +
+						damage + Glob.RESET + " damage to " + Glob.GREEN + hero.getName() + Glob.RESET);
+			}
+		}
+	}
+
+	private static double calculateDamage(Enemy enemy) {
+		double x = enemy.getAttack();
 		double y = hero.getDef();
 		return Math.round(x / y);
 	}
 
-	private int calculateExp(int i) {
+	private int calculateExp(Enemy) {
 		double x = (double) defaultEnemies.get(i).getLevel() / (double) hero.getLevel();
 		double z = x == 1 && hero.getLevel() != 1 ? x + 1 : x;
 		double y = (double) hero.getLevel() / z;

@@ -46,6 +46,7 @@ public class Gui {
 	private static JPanel[][] cell;
 	private static BufferedImage heroImage;
 	private static BufferedImage enemyImage;
+	private static BufferedImage fightImage;
 	private static Image image;
 	private static ArcadeMap arcadeMap;
 	private static int imageSize;
@@ -229,25 +230,52 @@ public class Gui {
 			String levelEnemy[] = findEnemy(newPos);
 			if (levelEnemy != null) {
 				try {
+					oneMove(fightCell(), emptyCell(), newPos);
 					enemyImage = ImageIO.read(new File(Glob.PIC + levelEnemy[1] + ".png"));
-					image = enemyImage.getScaledInstance(imageSize, imageSize, Image.SCALE_REPLICATE);
+					image = enemyImage.getScaledInstance(imageSize, imageSize, Image.SCALE_SMOOTH);
 					Object[] options = {"Fight", "Run"};
 					int choose = JOptionPane.showOptionDialog(null,
 							arcadeMap.getMapEnemies().get(Integer.parseInt(levelEnemy[0])).toString(),
 							"Information about the enemy", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
 							new ImageIcon(image), options, options[0]);
-					arcadeMap.getMapEnemies().remove(Integer.parseInt(levelEnemy[0]));
+					switch (choose) {
+						case 0:
+							System.out.println("fight");
+						case 1:
+							Random random = new Random();
+							int[] trueOrFalse = {1, 0};
+							switch (trueOrFalse[random.nextInt(2)]) {
+								case 1:
+									JOptionPane.showMessageDialog(null, "You managed to escape from the fight", "Hooray :)", JOptionPane.INFORMATION_MESSAGE);
+									oneMove(enemyCell(newPos), heroCell(), newPos);
+									break;
+								default:
+									JOptionPane.showMessageDialog(null, "You could not escape. This creature has caught up with you.", "Oops :(", JOptionPane.WARNING_MESSAGE);
+
+
+							}
+					}
+					//arcadeMap.getMapEnemies().remove(Integer.parseInt(levelEnemy[0]));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
-			panelMap.setVisible(false);
+			/*panelMap.setVisible(false);
 			panelMap.remove(newPos[0] * mapSize + newPos[1]);
 			panelMap.add(heroCell(), newPos[0] * mapSize + newPos[1]);
 			panelMap.remove(heroPos[0] * mapSize + heroPos[1]);
 			panelMap.add(emptyCell(), heroPos[0] * mapSize + heroPos[1]);
 			heroPos[0] = newPos[0];
 			heroPos[1] = newPos[1];
+			panelMap.setVisible(true);*/
+		}
+
+		private void oneMove(JPanel newCell, JPanel curCell, int[] newPos) {
+			panelMap.setVisible(false);
+			panelMap.remove(newPos[0] * mapSize + newPos[1]);
+			panelMap.add(newCell, newPos[0] * mapSize + newPos[1]);
+			panelMap.remove(heroPos[0] * mapSize + heroPos[1]);
+			panelMap.add(curCell, heroPos[0] * mapSize + heroPos[1]);
 			panelMap.setVisible(true);
 		}
 
@@ -259,10 +287,40 @@ public class Gui {
 			return empty;
 		}
 
+		private JPanel fightCell() {
+			JPanel fight = null;
+			try {
+				fight = new JPanel();
+				fight.setLayout(new BorderLayout());
+				fightImage = ImageIO.read(new File(Glob.PIC + "fight.png"));
+				image = fightImage.getScaledInstance(imageSize, imageSize, Image.SCALE_SMOOTH);
+				JLabel picLabel = new JLabel(new ImageIcon(image));
+				fight.add(picLabel, BorderLayout.CENTER);
+				fight.setBackground(new Color(255, 255, 255, 100));
+				fight.addMouseListener(new moveListener());
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return fight;
+		}
+
+		private JPanel enemyCell(int[] newPos) {
+			JPanel enemy = new JPanel();
+			enemy.setLayout(new BorderLayout());
+			image = enemyImage.getScaledInstance(imageSize, imageSize, Image.SCALE_SMOOTH);
+			JLabel picLabel = new JLabel(new ImageIcon(image));
+			enemy.add(picLabel, BorderLayout.CENTER);
+			enemy.setBackground(new Color(255, 255, 255, 100));
+			enemy.addMouseListener(new moveListener());
+			cell[newPos[0]][newPos[1]] = enemy;
+			return enemy;
+		}
+
 		private JPanel heroCell() {
 			JPanel hero = new JPanel();
 			hero.setLayout(new BorderLayout());
-			image = heroImage.getScaledInstance(imageSize, imageSize, Image.SCALE_REPLICATE);
+			image = heroImage.getScaledInstance(imageSize, imageSize, Image.SCALE_SMOOTH);
 			JLabel picLabel = new JLabel(new ImageIcon(image));
 			hero.add(picLabel, BorderLayout.CENTER);
 			hero.setBackground(new Color(0, 0, 0, 0));
