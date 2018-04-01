@@ -4,8 +4,6 @@ import ua.yzcorp.controller.*;
 import ua.yzcorp.view.Console;
 import ua.yzcorp.view.Message;
 
-
-import java.lang.reflect.Array;
 import java.util.*;
 
 import static ua.yzcorp.controller.Glob.hero;

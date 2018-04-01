@@ -29,7 +29,7 @@ public class Gui {
 	private static HeroManager heroManager = new HeroManager();
 	private static JFrame frame;
 	private static JTextField nameHeroTextField = new JTextField();
-	private static String nameHero, classHero;
+	private static String classHero;
 	private static JButton createButton = new JButton("Create");
 	private static JButton chooseButton = new JButton("Choose");
 	private static JTextPane textPane = new JTextPane();
@@ -44,15 +44,12 @@ public class Gui {
 	private static ImagePanel panelMap;
 	private static CreateStartMap createMap = new CreateStartMap();
 	private static JPanel[][] cell;
-
 	private static BufferedImage heroImage;
 	private static BufferedImage enemyImage;
 	private static Image image;
 	private static ArcadeMap arcadeMap;
-	private static String[] levelEnemy;
 	private static int imageSize;
 	private static int mapSize;
-
 
 	public static void start() {
 		initAllComp();
@@ -108,16 +105,15 @@ public class Gui {
 		mainPanel = new ImagePanel(new ImageIcon(Glob.PIC + "main.png").getImage(), frame.getWidth(), frame.getHeight());
 		panelMap = new ImagePanel(new ImageIcon(Glob.PIC + "map.png").getImage(), frame.getWidth(), frame.getHeight());
 		mainPanel.setLayout(new GridBagLayout());
-
-		panelButtonCreateAndChoose.setLayout(new GridBagLayout());						//two button create and choose
+		panelButtonCreateAndChoose.setLayout(new GridBagLayout());							//two button create and choose
 		panelButtonCreateAndChoose.setBackground(new Color(0,0,0,200));
-		createButton.addActionListener(new ButtonAction());							//add Listener
+		createButton.addActionListener(new ButtonAction());									//add Listener
 		chooseButton.addActionListener(new ButtonAction());
 
-		panelFieldCreate.setBackground(new Color(0,0,0,200));			//init create hero field
+		panelFieldCreate.setBackground(new Color(0,0,0,200));					//init create hero field
 		panelFieldCreate.setLayout(new GridBagLayout());
 
-		textPane.setEditable(false);											//init and add text about Default stat Heroes
+		textPane.setEditable(false);														//init and add text about Default stat Heroes
 		textPane.setVisible(false);
 		textPane.setBackground(new Color(0, 0, 0, 0));
 		doc = textPane.getStyledDocument();
@@ -172,7 +168,7 @@ public class Gui {
 		panelTableChoose.setVisible(false);
 	}
 
-	public static void updateMap() {
+	static void updateMap() {
 		try {
 			panelMap.setVisible(false);
 			panelMap.removeAll();
@@ -180,7 +176,7 @@ public class Gui {
 				for (int j = 0; j < cell[i].length; j++) {
 					cell[i][j] = new JPanel();
 					cell[i][j].setLayout(new BorderLayout());
-					levelEnemy = findEnemy(new int[] {i, j});
+					String[] levelEnemy = findEnemy(new int[]{i, j});
 					if (levelEnemy != null && !Arrays.equals(heroPos, new int[]{i, j})) {
 						enemyImage = ImageIO.read(new File(Glob.PIC + levelEnemy[1] + ".png"));
 						image = enemyImage.getScaledInstance(imageSize, imageSize, Image.SCALE_REPLICATE);
@@ -229,7 +225,7 @@ public class Gui {
 				}
 			}
 		}
-		public void setNewPosHero(int[] newPos) {
+		void setNewPosHero(int[] newPos) {
 			String levelEnemy[] = findEnemy(newPos);
 			if (levelEnemy != null) {
 				try {
@@ -284,7 +280,7 @@ public class Gui {
 					panelTableChoose.setVisible(false);
 					panelFieldCreate.setVisible(true);
 				} else if (((JButton) e.getSource()).getText().equals("Save")) {
-					nameHero = nameHeroTextField.getText();
+					String nameHero = nameHeroTextField.getText();
 					if (nameHero == null || nameHero.isEmpty()) {
 						JOptionPane.showMessageDialog(null, heroManager.emptyName(), "Error", JOptionPane.ERROR_MESSAGE);
 					} else if (!HeroManager.checkName(nameHero)) {
@@ -348,7 +344,7 @@ public class Gui {
 		private int		width;
 		private int		height;
 
-		public ImagePanel(Image img, int width, int height) {
+		ImagePanel(Image img, int width, int height) {
 			super();
 			this.img = img;
 			this.width = width;
