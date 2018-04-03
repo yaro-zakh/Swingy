@@ -1,5 +1,6 @@
 package ua.yzcorp.view;
 
+import com.sun.xml.internal.bind.v2.TODO;
 import ua.yzcorp.controller.ConnectSQL;
 import ua.yzcorp.controller.DefaultStat;
 import ua.yzcorp.controller.Glob;
@@ -42,7 +43,7 @@ public class Gui {
 	private static StyledDocument doc;
 	private static SimpleAttributeSet center;
 	private static ImagePanel panelMap;
-	private static CreateStartMap createMap = new CreateStartMap();
+	//private static CreateStartMap createMap = new CreateStartMap();
 	private static JPanel[][] cell;
 	private static BufferedImage heroImage;
 	private static BufferedImage enemyImage;
@@ -70,24 +71,53 @@ public class Gui {
 		chooseHero();
 	}
 
-	public static class CreateStartMap extends Thread {
-		@Override
-		public void run() {
-			try {
-				super.run();
-				arcadeMap = new ArcadeMap();
-				mapSize = arcadeMap.getSize();
-				imageSize = frame.getWidth() / mapSize;
-				heroImage = ImageIO.read(new File(Glob.PIC + hero.getClassHero().toLowerCase() + ".png"));
-				panelMap.setLayout(new GridLayout(mapSize, mapSize, 2, 2));
-				cell = new JPanel[mapSize][mapSize];
-				updateMap();
-				mainPanel.setVisible(false);
-				frame.getContentPane().add(panelMap, BorderLayout.CENTER);
+	static void createStartMap() {
+		try {
+			arcadeMap = new ArcadeMap();
+			mapSize = arcadeMap.getSize();
+			imageSize = frame.getWidth() / mapSize;
+			heroImage = ImageIO.read(new File(Glob.PIC + hero.getClassHero().toLowerCase() + ".png"));
+			panelMap.setLayout(new GridLayout(mapSize, mapSize, 2, 2));
+			cell = new JPanel[mapSize][mapSize];
+			updateMap();
+			mainPanel.setVisible(false);
+			frame.getContentPane().add(panelMap, BorderLayout.CENTER);
 
-			} catch (IOException e) {
-				e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static void updateMap() {
+		try {
+			panelMap.setVisible(false);
+			panelMap.removeAll();
+			for (int i = 0; i < cell.length; i++) {
+				for (int j = 0; j < cell[i].length; j++) {
+					cell[i][j] = new JPanel();
+					cell[i][j].setLayout(new BorderLayout());
+					String[] levelEnemy = findEnemy(new int[]{i, j});
+					if (levelEnemy != null && !Arrays.equals(heroPos, new int[]{i, j})) {
+						enemyImage = ImageIO.read(new File(Glob.PIC + levelEnemy[1] + ".png"));
+						image = enemyImage.getScaledInstance(imageSize, imageSize, Image.SCALE_REPLICATE);
+						JLabel picLabel = new JLabel(new ImageIcon(image));
+						cell[i][j].add(picLabel, BorderLayout.CENTER);
+						cell[i][j].setBackground(new Color(255, 255, 255, 100));
+					} else if (Arrays.equals(heroPos, new int[]{i, j})) {
+						image = heroImage.getScaledInstance(imageSize, imageSize, Image.SCALE_REPLICATE);
+						JLabel picLabel = new JLabel(new ImageIcon(image));
+						cell[i][j].add(picLabel, BorderLayout.CENTER);
+						cell[i][j].setBackground(new Color(0, 0, 0, 0));
+					} else {
+						cell[i][j].setBackground(new Color(255, 255, 255, 100));
+					}
+					cell[i][j].addMouseListener(new moveListener());
+					panelMap.add(cell[i][j]);
+				}
 			}
+			panelMap.setVisible(true);
+		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
 	}
 
@@ -169,39 +199,6 @@ public class Gui {
 		panelTableChoose.setVisible(false);
 	}
 
-	static void updateMap() {
-		try {
-			panelMap.setVisible(false);
-			panelMap.removeAll();
-			for (int i = 0; i < cell.length; i++) {
-				for (int j = 0; j < cell[i].length; j++) {
-					cell[i][j] = new JPanel();
-					cell[i][j].setLayout(new BorderLayout());
-					String[] levelEnemy = findEnemy(new int[]{i, j});
-					if (levelEnemy != null && !Arrays.equals(heroPos, new int[]{i, j})) {
-						enemyImage = ImageIO.read(new File(Glob.PIC + levelEnemy[1] + ".png"));
-						image = enemyImage.getScaledInstance(imageSize, imageSize, Image.SCALE_REPLICATE);
-						JLabel picLabel = new JLabel(new ImageIcon(image));
-						cell[i][j].add(picLabel, BorderLayout.CENTER);
-						cell[i][j].setBackground(new Color(255, 255, 255, 100));
-					} else if (Arrays.equals(heroPos, new int[]{i, j})) {
-						image = heroImage.getScaledInstance(imageSize, imageSize, Image.SCALE_REPLICATE);
-						JLabel picLabel = new JLabel(new ImageIcon(image));
-						cell[i][j].add(picLabel, BorderLayout.CENTER);
-						cell[i][j].setBackground(new Color(0, 0, 0, 0));
-					} else {
-						cell[i][j].setBackground(new Color(255, 255, 255, 100));
-					}
-					cell[i][j].addMouseListener(new moveListener());
-					panelMap.add(cell[i][j]);
-				}
-			}
-			panelMap.setVisible(true);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-	}
-
 	public static class moveListener extends MouseAdapter {
 		@Override
 		public void mouseClicked(MouseEvent e) {
@@ -262,12 +259,12 @@ public class Gui {
 				}
 			} else {
 				oneMove(heroCell(), emptyCell(), newPos);
+				heroPos[0] = newPos[0];
+				heroPos[1] = newPos[1];
 			}
-			heroPos[0] = newPos[0];
-			heroPos[1] = newPos[1];
 		}
-
-		public void fight(String levelEnemy, int[] newPos) {
+//TODO Game over
+		void fight(String levelEnemy, int[] newPos) {
 			if (arcadeMap.startFight(arcadeMap.getMapEnemies().get(Integer.parseInt(levelEnemy)))) {
 				arcadeMap.dropItem(arcadeMap.getMapEnemies().get(Integer.parseInt(levelEnemy)));
 				int pickUP = JOptionPane.showConfirmDialog(null,
@@ -277,9 +274,11 @@ public class Gui {
 						arcadeMap.pickUpDrop(arcadeMap.getMapEnemies().get(Integer.parseInt(levelEnemy)), arcadeMap.getRandomDrop());
 						arcadeMap.getMapEnemies().remove(Integer.parseInt(levelEnemy));
 						if (arcadeMap.levelUp()) {
-
+							createStartMap();
 						} else {
 							oneMove(heroCell(), emptyCell(), newPos);
+							heroPos[0] = newPos[0];
+							heroPos[1] = newPos[1];
 						}
 					default:
 						break;
@@ -377,7 +376,7 @@ public class Gui {
 				} else if (((JButton) e.getSource()).getText().equals("Start")){
 					panelTableChoose.setVisible(false);
 					panelButtonCreateAndChoose.setVisible(false);
-					createMap.start();
+					createStartMap();
 				}
 			} else if (e.getSource() instanceof JComboBox) {
 				JComboBox box = (JComboBox)e.getSource();
