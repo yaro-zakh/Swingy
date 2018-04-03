@@ -241,7 +241,7 @@ public class Gui {
 					switch (choose) {
 						case 0:
 							JOptionPane.showMessageDialog(null, "I'll kill you hardly.", "Start fight" ,JOptionPane.INFORMATION_MESSAGE, new ImageIcon(image));
-							fight(levelEnemy[0]);
+							fight(levelEnemy[0], newPos);
 							break;
 						default:
 							Random random = new Random();
@@ -253,26 +253,21 @@ public class Gui {
 									break;
 								default:
 									JOptionPane.showMessageDialog(null, "You could not escape. This creature has caught up with you.", "Oops :(", JOptionPane.WARNING_MESSAGE);
-									fight(levelEnemy[0]);
+									fight(levelEnemy[0], newPos);
 							}
 
 					}
-					//arcadeMap.getMapEnemies().remove(Integer.parseInt(levelEnemy[0]));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+			} else {
+				oneMove(heroCell(), emptyCell(), newPos);
 			}
-			/*panelMap.setVisible(false);
-			panelMap.remove(newPos[0] * mapSize + newPos[1]);
-			panelMap.add(heroCell(), newPos[0] * mapSize + newPos[1]);
-			panelMap.remove(heroPos[0] * mapSize + heroPos[1]);
-			panelMap.add(emptyCell(), heroPos[0] * mapSize + heroPos[1]);
 			heroPos[0] = newPos[0];
 			heroPos[1] = newPos[1];
-			panelMap.setVisible(true);*/
 		}
 
-		public void fight(String levelEnemy) {
+		public void fight(String levelEnemy, int[] newPos) {
 			if (arcadeMap.startFight(arcadeMap.getMapEnemies().get(Integer.parseInt(levelEnemy)))) {
 				arcadeMap.dropItem(arcadeMap.getMapEnemies().get(Integer.parseInt(levelEnemy)));
 				int pickUP = JOptionPane.showConfirmDialog(null,
@@ -280,6 +275,12 @@ public class Gui {
 				switch (pickUP) {
 					case 0:
 						arcadeMap.pickUpDrop(arcadeMap.getMapEnemies().get(Integer.parseInt(levelEnemy)), arcadeMap.getRandomDrop());
+						arcadeMap.getMapEnemies().remove(Integer.parseInt(levelEnemy));
+						if (arcadeMap.levelUp()) {
+
+						} else {
+							oneMove(heroCell(), emptyCell(), newPos);
+						}
 					default:
 						break;
 				}
