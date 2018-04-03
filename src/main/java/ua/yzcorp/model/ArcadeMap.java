@@ -2,6 +2,7 @@ package ua.yzcorp.model;
 
 import ua.yzcorp.controller.*;
 import ua.yzcorp.view.Console;
+import ua.yzcorp.view.Gui;
 import ua.yzcorp.view.Message;
 
 import java.util.*;
@@ -28,6 +29,7 @@ public class ArcadeMap {
 		this.artifacts = artifactsManager.getAllTarget();
 		this.size = (hero.getLevel() - 1) * 5 + 10 - (hero.getLevel() % 2);
 		heroPos = new int[]{Math.round(size / 2), Math.round(size / 2)};
+		hero.setMustLevel((int) (hero.getLevel() * 1000 + Math.pow(hero.getLevel() - 1, 2) * 450));
 		createRandomEnemies();
 	}
 
@@ -326,8 +328,7 @@ public class ArcadeMap {
 
 	public boolean levelUp() {
 		HeroManager heroManager = new HeroManager();
-		int mustLvl = (int) (hero.getLevel() * 1000 + Math.pow(hero.getLevel() - 1, 2) * 450);
-		if (hero.getExp() >= mustLvl) {
+		if (hero.getExp() >= hero.getMustLevel()) {
 			hero.setLevel(hero.getLevel() + 1);
 			hero = Console.getHero(hero.getClassHero(), hero.getName(), hero.getLevel(), hero.getExp(), hero, 10);
 			hero.updateAllStat();

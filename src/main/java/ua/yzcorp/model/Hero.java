@@ -14,7 +14,8 @@ public class Hero {
 	private int			def;
 	private int			HP;
 	private int			CC;
-	public static int[]		heroPos = new int[2];
+	private int			mustLevel;
+	public static int[]	heroPos = new int[2];
 	private Artifacts	artifacts;
 
 	public Hero(String name, String classHero, int level, int exp, int attack, int def, int HP, int CC, Artifacts artifacts) {
@@ -37,8 +38,13 @@ public class Hero {
 		}
 	}
 
-	public int[] getHeroPos() {
-		return heroPos;
+
+	public int getMustLevel() {
+		return mustLevel;
+	}
+
+	public void setMustLevel(int mustLevel) {
+		this.mustLevel = mustLevel;
 	}
 
 	public void updateStat(String key, Item item) {
@@ -191,7 +197,7 @@ public class Hero {
 
 	@Override
 	public String toString() {
-		return Glob.GR_BOLD + "Your Hero\n" + Glob.RESET +
+		return Glob.GR_BOLD + "Your Hero" + Glob.RESET + "\n" +
 				"Nick:\t" + name + "\n" +
 				"Class:\t" + classHero + "\n" +
 				"Level:\t" + level + "\n" +
@@ -200,7 +206,7 @@ public class Hero {
 				"Def:\t" + def + "\n" +
 				"HP:\t" + HP + "\n" +
 				"CC:\t" + CC + "%\n" +
-				Glob.GR_BOLD + "Equip:\n" + Glob.RESET + artifacts;
+				Glob.GR_BOLD + "Equip:" + Glob.RESET + "\n" + artifacts;
 	}
 }
 
