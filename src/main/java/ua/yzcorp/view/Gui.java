@@ -12,6 +12,7 @@ import static ua.yzcorp.model.Hero.heroPos;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -52,9 +53,9 @@ public class Gui {
 	private static int imageSize;
 	private static int mapSize;
 
-	public static CreateStartMap getCreateMap() {
-		return createMap;
-	}
+	private static JPanel heroInfoPanel = new JPanel();
+	private static JProgressBar progressLevel = new JProgressBar();
+	private static JProgressBar progressHP = new JProgressBar();
 
 	public static void start() {
 		initAllComp();
@@ -85,6 +86,7 @@ public class Gui {
 				heroImage = ImageIO.read(new File(Glob.PIC + hero.getClassHero().toLowerCase() + ".png"));
 				panelMap.setLayout(new GridLayout(mapSize, mapSize, 2, 2));
 				cell = new JPanel[mapSize][mapSize];
+				createHeroInfoBar();
 				updateMap();
 				mainPanel.setVisible(false);
 				frame.getContentPane().add(panelMap, BorderLayout.CENTER);
@@ -93,6 +95,25 @@ public class Gui {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	public static void createHeroInfoBar() {
+		heroInfoPanel.setLayout(new BoxLayout(heroInfoPanel, BoxLayout.Y_AXIS));
+		heroInfoPanel.setBackground(new Color(0, 0, 0, 0));
+		progressHP.setForeground(Color.RED);
+		progressHP.setMaximum(hero.getHP());
+		progressHP.setMinimum(0);
+		progressHP.setValue(hero.getHP());
+		progressHP.setStringPainted(true);
+		progressLevel.setMaximum(hero.getMustLevel());
+		progressLevel.setMinimum(hero.getExp());
+		progressLevel.setValue(hero.getExp());
+		progressLevel.setStringPainted(true);
+		heroInfoPanel.add(progressHP);
+		heroInfoPanel.add(progressLevel);
+		progressLevel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+		progressHP.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+		frame.getContentPane().add(heroInfoPanel, BorderLayout.PAGE_START);
 	}
 
 	public static void updateMap() {
@@ -123,6 +144,7 @@ public class Gui {
 				}
 			}
 			panelMap.setVisible(true);
+			heroInfoPanel.setVisible(true);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -292,6 +314,8 @@ public class Gui {
 						break;
 				}
 			}
+			progressHP.setValue(hero.getHP());
+			progressLevel.setValue(hero.getExp());
 		}
 
 		private void oneMove(JPanel newCell, JPanel curCell, int[] newPos) {
