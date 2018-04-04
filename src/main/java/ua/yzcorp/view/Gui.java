@@ -82,7 +82,7 @@ public class Gui {
 			try {
 				arcadeMap = new ArcadeMap();
 				mapSize = arcadeMap.getSize();
-				imageSize = frame.getWidth() / mapSize;
+				imageSize = panelMap.getWidth() / mapSize;
 				heroImage = ImageIO.read(new File(Glob.PIC + hero.getClassHero().toLowerCase() + ".png"));
 				panelMap.setLayout(new GridLayout(mapSize, mapSize, 2, 2));
 				cell = new JPanel[mapSize][mapSize];

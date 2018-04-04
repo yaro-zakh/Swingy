@@ -303,6 +303,7 @@ public class ArcadeMap {
 			int criticalChance = Math.round(100 / hero.getCC());
 			if (random.nextInt(criticalChance) == 0) {
 				tmpAttack *= 2;
+				hero.setHP(hero.getHP() + (int) Math.round(tmpAttack * 0.02));
 			}
 			tmpHp -= tmpAttack;
 			Glob.inform.append(Glob.GREEN).append(hero.getName()).append(Glob.RESET).append(" inflicted ").

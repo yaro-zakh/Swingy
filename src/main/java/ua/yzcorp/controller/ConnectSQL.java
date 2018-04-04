@@ -50,8 +50,8 @@ public class ConnectSQL {
 					"VALUES ('Dark Helios Slasher', 'Bloody Eternal Leather Armor', 'Eternal Circlet', 3)");
 
 			statement.executeUpdate("INSERT INTO enemy (name, attack, hit_points, level, ascii) VALUES ('Ariarc', 50, 150, 1, '❶')");
-			statement.executeUpdate("INSERT INTO enemy (name, attack, hit_points, level, ascii) VALUES ('Lebruum', 150, 300, 2, '❷')");
-			statement.executeUpdate("INSERT INTO enemy (name, attack, hit_points, level, ascii) VALUES ('Hunchback Kwai', 300, 600, 3, '❸')");
+			statement.executeUpdate("INSERT INTO enemy (name, attack, hit_points, level, ascii) VALUES ('Lebruum', 100, 250, 2, '❷')");
+			statement.executeUpdate("INSERT INTO enemy (name, attack, hit_points, level, ascii) VALUES ('Hunchback Kwai', 200, 500, 3, '❸')");
 
 
 		} catch (SQLException e) {
