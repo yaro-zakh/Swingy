@@ -1,7 +1,7 @@
 package ua.yzcorp.controller;
 
 import ua.yzcorp.model.Artifacts;
-import ua.yzcorp.model.Artifacts.*;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;

@@ -8,11 +8,11 @@ import ua.yzcorp.view.Message;
 import java.util.*;
 
 import static ua.yzcorp.controller.Glob.hero;
+import static ua.yzcorp.controller.Glob.mapEnemies;
 import static ua.yzcorp.model.Hero.heroPos;
 
 public class ArcadeMap {
 	private List<Enemy> defaultEnemies;
-	private List<Enemy> mapEnemies;
 	private List<Artifacts> artifacts;
 	private char [][] arcadeMap;
 	private int [] oldPos = new int[2];
@@ -20,16 +20,21 @@ public class ArcadeMap {
 	private char asciiHero = '⛹';
 	private char asciiEmpty = '⛶';
 	private String randomDrop;
+	private String[] levelEnemy;
 
 	public ArcadeMap() {
-		mapEnemies = new LinkedList<>();
 		EnemyManager enemyManager = new EnemyManager();
 		ArtifactsManager artifactsManager = new ArtifactsManager();
 		this.defaultEnemies = enemyManager.getAllTarget();
 		this.artifacts = artifactsManager.getAllTarget();
+		updateMainInfo();
+	}
+
+	private void updateMainInfo() {
 		this.size = (hero.getLevel() - 1) * 5 + 10 - (hero.getLevel() % 2);
 		heroPos = new int[]{Math.round(size / 2), Math.round(size / 2)};
 		hero.setMustLevel((int) (hero.getLevel() * 1000 + Math.pow(hero.getLevel() - 1, 2) * 450));
+		mapEnemies = new LinkedList<>();
 		createRandomEnemies();
 	}
 
@@ -89,10 +94,6 @@ public class ArcadeMap {
 		return defaultEnemies;
 	}
 
-	public List<Enemy> getMapEnemies() {
-		return mapEnemies;
-	}
-
 	public List<Artifacts> getArtifacts() {
 		return artifacts;
 	}
@@ -101,21 +102,13 @@ public class ArcadeMap {
 		return size;
 	}
 
-	public void setSize(int size) {
-		this.size = size;
-	}
-
 	public String getRandomDrop() {
 		return randomDrop;
 	}
 
-	public void setRandomDrop(String randomDrop) {
-		this.randomDrop = randomDrop;
-	}
-
 	public void startGame() {
 		Scanner scanner = new Scanner(System.in);
-		setNewMap(hero.getLevel());
+		updateMap();
 		printArcadeMap(true);
 		while (hero.getHP() > 0 && scanner.hasNextLine()) {
 			String move = scanner.nextLine();
@@ -147,22 +140,18 @@ public class ArcadeMap {
 		scanner.close();
 	}
 
-	private void setNewMap(int level) {
-		final Random random = new Random();
-		setSize((level - 1) * 5 + 10 - (level % 2));
-		heroPos = new int[]{Math.round(size / 2), Math.round(size / 2)};
+	private void updateMap() {
 		arcadeMap = new char[size][size];
 		for (int i = 0; i < arcadeMap.length; i++) {
-			for (int j = 0; j < arcadeMap.length; j++) {
-				arcadeMap[i][j] = asciiEmpty;
-			}
-		}
-		arcadeMap[heroPos[0]][heroPos[1]] = asciiHero;
-		for (int cnt = 0; cnt < Math.pow(size, 2) / 2; cnt++) {
-			int i = random.nextInt(size);
-			int j = random.nextInt(size);
-			if (arcadeMap[i][j] == asciiEmpty) {
-				arcadeMap[i][j] = defaultEnemies.get(random.nextInt(3)).getAscii();
+			for (int j = 0; j < arcadeMap[i].length; j++) {
+				levelEnemy = Gui.findEnemy(new int[]{i, j});
+				if (levelEnemy != null && !Arrays.equals(heroPos, new int[]{i, j})) {
+					arcadeMap[i][j] = mapEnemies.get(Integer.parseInt(levelEnemy[0])).getAscii();
+				} else  if (Arrays.equals(heroPos, new int[]{i, j})) {
+					arcadeMap[i][j] = asciiHero;
+				} else {
+					arcadeMap[i][j] = asciiEmpty;
+				}
 			}
 		}
 	}
@@ -209,26 +198,25 @@ public class ArcadeMap {
 
 	private void editMap() {
 		if(findCollision()) {
-			int i = 0;
-			for (; defaultEnemies.get(i).getAscii() != arcadeMap[heroPos[0]][heroPos[1]]; i++);
-			if (!startFight(defaultEnemies.get(i))) {
+			if (!startFight(mapEnemies.get(Integer.parseInt(levelEnemy[0])))) {
 				Message.print(Glob.inform.toString());
 				Message.gameOver();
 				this.arcadeMap[heroPos[0]][heroPos[1]] = '☠';
 				printArcadeMap(false);
 				Console.start();
 			} else {
-				dropItem(defaultEnemies.get(i));
+				dropItem(mapEnemies.get(Integer.parseInt(levelEnemy[0])));
 			}
 			if (levelUp()) {
 				Message.levelUp();
 				Message.print(hero.toString());
-				setNewMap(hero.getLevel());
+				updateMainInfo();
+				updateMap();
 			}
 		}
-		if (heroPos[1] == 0 || heroPos[1] == arcadeMap.length - 1 ||
-				heroPos[0] == 0 || heroPos[0] == arcadeMap.length -1) {
-			setNewMap(hero.getLevel());
+		if (heroPos[1] == 0 || heroPos[1] == arcadeMap.length - 1 || heroPos[0] == 0 || heroPos[0] == arcadeMap.length -1) {
+			Message.youWon();
+			Console.start();
 		} else {
 			this.arcadeMap[oldPos[0]][oldPos[1]] = asciiEmpty;
 			this.arcadeMap[heroPos[0]][heroPos[1]] = asciiHero;
@@ -236,49 +224,45 @@ public class ArcadeMap {
 		printArcadeMap(true);
 	}
 
-/*	private boolean startFight() {
-		HeroManager heroManager = new HeroManager();
+	private boolean findCollision() {
+		Scanner scanner = new Scanner(System.in);
 		Random random = new Random();
-		int i = 0;
-		for (; defaultEnemies.get(i).getAscii() != arcadeMap[heroPos[0]][heroPos[1]]; i++);
-		int tmpHp = defaultEnemies.get(i).getHP();
-		int tmpAttack;
-		while (hero.getHP() > 0 && tmpHp > 0) {
-			tmpAttack = hero.getAttack();
-			int criticalChance = Math.round(100 / hero.getCC());
-			if (random.nextInt(criticalChance) == 0) {
-				tmpAttack *= 2;
-			}
-			tmpHp -= tmpAttack;
-			Message.print(Glob.GREEN + hero.getName() + Glob.RESET + " inflicted " + Glob.GREEN + tmpAttack + Glob.RESET +
-					" damage to " + Glob.RED + defaultEnemies.get(i).getName() + Glob.RESET);
-			if (tmpHp > 0) {
-				int damage = (int) calculateDamage(i);
-				hero.setHP(hero.getHP() - damage);
-				Message.print(Glob.RED + defaultEnemies.get(i).getName() + Glob.RESET + " inflicted " + Glob.RED +
-						damage + Glob.RESET + " damage to " + Glob.GREEN + hero.getName() + Glob.RESET);
-			}
-		}
-		if (hero.getHP() <= 0) {
-			return false;
-		} else {
-			int mustLvl = (int)(hero.getLevel() * 1000 + Math.pow(hero.getLevel() - 1, 2) * 450);
-			int exp = calculateExp(i);
-			hero.setExp(hero.getExp() + exp);
-			Message.print("You won and got " + Glob.BLUE + exp + Glob.RESET + " experiences");
-			dropItem(i);
-			if (hero.getExp() >= mustLvl) {
-				hero.setLevel(hero.getLevel() + 1);
-				hero = Console.getHero(hero.getClassHero(), hero.getName(), hero.getLevel(), hero.getExp(), hero, 10);
-				hero.updateAllStat();
-				heroManager.updateHero(hero, ConnectSQL.getConnection());
-				Message.levelUp();
-				Message.print(hero.toString());
-				setNewMap(hero.getLevel());
+		if (arcadeMap[heroPos[0]][heroPos[1]] != asciiEmpty) {
+			levelEnemy = Gui.findEnemy(new int[]{heroPos[0], heroPos[1]});
+			this.arcadeMap[oldPos[0]][oldPos[1]] = asciiEmpty;
+			this.arcadeMap[heroPos[0]][heroPos[1]] = '☭';
+			printArcadeMap(false);
+			Message.print(mapEnemies.get(Integer.parseInt(levelEnemy[0])).toString());
+			Message.print("Select an action: " + Glob.GR_BOLD + "RUN " + Glob.RESET +
+					"or " + Glob.GR_BOLD + "FIGHT" + Glob.RESET);
+			while (scanner.hasNextLine()) {
+				String runOrFight = scanner.nextLine();
+				switch (runOrFight.toLowerCase()) {
+					case "run":
+						int[] trueOrFalse = {1, 0};
+						switch (trueOrFalse[random.nextInt(2)]) {
+							case 1:
+								Message.print(Glob.GREEN + "You managed to escape from the fight" + Glob.RESET);
+								arcadeMap[heroPos[0]][heroPos[1]] = mapEnemies.get(Integer.parseInt(levelEnemy[0])).getAscii();
+								heroPos[0] = oldPos[0];
+								heroPos[1] = oldPos[1];
+								return false;
+							default:
+								Message.print(Glob.RED + "You could not escape. This creature has caught up with you." + Glob.RESET);
+								arcadeMap[heroPos[0]][heroPos[1]] = mapEnemies.get(Integer.parseInt(levelEnemy[0])).getAscii();
+								return true;
+						}
+					case "fight":
+						Message.print("I'll kill you hardly.");
+						arcadeMap[heroPos[0]][heroPos[1]] = mapEnemies.get(Integer.parseInt(levelEnemy[0])).getAscii();
+						return true;
+					default:
+						Message.print(Glob.RED + "Choose the right action!!!" + Glob.RESET);
+				}
 			}
 		}
-		return true;
-	}*/
+		return false;
+	}
 
 	public int calculateExp(Enemy enemy) {
 		double x = (double) enemy.getLevel() / (double) hero.getLevel();
@@ -355,17 +339,10 @@ public class ArcadeMap {
 			Scanner scanner = new Scanner(System.in);
 			String line = scanner.nextLine();
 			while (line != null || scanner.hasNextLine()) {
+				assert line != null;
 				switch (line.toLowerCase()) {
 					case "yes":
 						pickUpDrop(enemy, randomDrop);
-						/*Item value = hero.getArtifacts().getArtifacts().get(items[randChoose].toLowerCase());
-						if (value == null) {
-							hero.getArtifacts().addNewItem(enemy.getLevel(), items[randChoose].toLowerCase());
-							hero.updateStat(items[randChoose].toLowerCase(), artifacts.get(enemy.getLevel() - 1).getArtifacts().get(items[randChoose]));
-						} else if (value.getPoint() < artifacts.get(enemy.getLevel() - 1).getArtifacts().get(items[randChoose]).getPoint()) {
-							hero.getArtifacts().addNewItem(enemy.getLevel(), items[randChoose].toLowerCase());
-							hero.updateStat(items[randChoose].toLowerCase(), artifacts.get(enemy.getLevel() - 1).getArtifacts().get(items[randChoose]));
-						}*/
 					case "no":
 						return;
 					default:
@@ -387,47 +364,6 @@ public class ArcadeMap {
 			hero.getArtifacts().addNewItem(enemy.getLevel(), rand.toLowerCase());
 			hero.updateStat(rand.toLowerCase(), artifacts.get(enemy.getLevel() - 1).getArtifacts().get(rand));
 		}
-	}
-
-	private boolean findCollision() {
-		Scanner scanner = new Scanner(System.in);
-		Random random = new Random();
-		if (arcadeMap[heroPos[0]][heroPos[1]] != asciiEmpty) {
-			int i = 0;
-			for (; defaultEnemies.get(i).getAscii() != arcadeMap[heroPos[0]][heroPos[1]]; i++);
-			this.arcadeMap[oldPos[0]][oldPos[1]] = asciiEmpty;
-			this.arcadeMap[heroPos[0]][heroPos[1]] = '☭';
-			printArcadeMap(false);
-			Message.print(defaultEnemies.get(i).toString());
-			Message.print("Select an action: " + Glob.GR_BOLD + "RUN " + Glob.RESET +
-					"or " + Glob.GR_BOLD + "FIGHT" + Glob.RESET);
-			while (scanner.hasNextLine()) {
-				String runOrFight = scanner.nextLine();
-				switch (runOrFight.toLowerCase()) {
-					case "run":
-						int[] trueOrFalse = {1, 0};
-						switch (trueOrFalse[random.nextInt(2)]) {
-							case 1:
-								Message.print(Glob.GREEN + "You managed to escape from the fight" + Glob.RESET);
-								arcadeMap[heroPos[0]][heroPos[1]] = defaultEnemies.get(i).getAscii();
-								heroPos[0] = oldPos[0];
-								heroPos[1] = oldPos[1];
-								return false;
-							default:
-								Message.print(Glob.RED + "You could not escape. This creature has caught up with you." + Glob.RESET);
-								arcadeMap[heroPos[0]][heroPos[1]] = defaultEnemies.get(i).getAscii();
-								return true;
-						}
-					case "fight":
-						Message.print("I'll kill you hardly.");
-						arcadeMap[heroPos[0]][heroPos[1]] = defaultEnemies.get(i).getAscii();
-						return true;
-					default:
-						Message.print(Glob.RED + "Choose the right action!!!" + Glob.RESET);
-				}
-			}
-		}
-		return false;
 	}
 
 	private void setOldPos(int[] oldPos) {

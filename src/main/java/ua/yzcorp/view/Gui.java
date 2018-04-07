@@ -1,18 +1,15 @@
 package ua.yzcorp.view;
 
-import ua.yzcorp.controller.ConnectSQL;
-import ua.yzcorp.controller.DefaultStat;
-import ua.yzcorp.controller.Glob;
-import ua.yzcorp.controller.HeroManager;
+import ua.yzcorp.controller.*;
 import ua.yzcorp.model.ArcadeMap;
 import ua.yzcorp.model.Enemy;
 import ua.yzcorp.model.MyTableModel;
 import static ua.yzcorp.controller.Glob.hero;
 import static ua.yzcorp.model.Hero.heroPos;
+import static ua.yzcorp.controller.Glob.mapEnemies;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -60,8 +57,6 @@ public class Gui {
 
 	private static ImagePanel gameOverPanel;
 	private static ImagePanel winPanel;
-	private static BufferedImage gameOverImage;
-	private static BufferedImage winImage;
 	private static JButton exitButton = new JButton("EXIT");
 	private static JButton tryAgainButton = new JButton("Try again");
 	private static JPanel finalButtonPanel = new JPanel();
@@ -116,6 +111,9 @@ public class Gui {
 		panelFieldCreate.add(textPane, new GridBagConstraints(0, 3, 2, 1, 1, 0,
 				GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL,
 				new Insets(10, 10 , 10, 10), 0, 0 ));
+
+		gameOverPanel = new ImagePanel(new ImageIcon(Glob.PIC + "die.png").getImage(), frame.getWidth(), frame.getHeight());
+		winPanel = new ImagePanel(new ImageIcon(Glob.PIC + "won.png").getImage(), frame.getWidth(), frame.getHeight());
 	}
 
 	public static class CreateStartMap extends Thread {
@@ -162,14 +160,13 @@ public class Gui {
 		frame.getContentPane().add(heroInfoPanel, BorderLayout.PAGE_START);
 	}
 
-	public static void finalView() {
+	public static void finalView(ImagePanel finalPanel) {
 		panelMap.setVisible(false);
 		heroInfoPanel.setVisible(false);
-		gameOverPanel = new ImagePanel(new ImageIcon(Glob.PIC + "die.png").getImage(), frame.getWidth(), frame.getHeight());
-		frame.getContentPane().add(gameOverPanel, BorderLayout.CENTER);
+		frame.getContentPane().add(finalPanel, BorderLayout.CENTER);
 		frame.pack();
-		tryAgainButton.addActionListener(new finalButtomAction());
-		exitButton.addActionListener(new finalButtomAction());
+		tryAgainButton.addActionListener(new finalButtonAction());
+		exitButton.addActionListener(new finalButtonAction());
 		tryAgainButton.setBackground(new Color(0, 0, 0, 0));
 		tryAgainButton.setBorderPainted(false);
 		exitButton.setBorderPainted(false);
@@ -182,11 +179,11 @@ public class Gui {
 		finalButtonPanel.add(exitButton, new GridBagConstraints(1, 0, 1, 1, 1, 0,
 				GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL,
 				new Insets(10, 5 , 10, 10), 30, 0 ));
-		gameOverPanel.setLayout(new GridBagLayout());
-		gameOverPanel.add(finalButtonPanel, new GridBagConstraints(0, 0, 1, 1, 1, 0,
+		finalPanel.setLayout(new GridBagLayout());
+		finalPanel.add(finalButtonPanel, new GridBagConstraints(0, 0, 1, 1, 1, 0,
 				GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL,
 				new Insets(525, 150 , 10, 150), 0, 0 ));
-		gameOverPanel.setVisible(true);
+		finalPanel.setVisible(true);
 	}
 
 	public static void updateMap() {
@@ -223,8 +220,8 @@ public class Gui {
 		}
 	}
 
-	private static String[] findEnemy(int[] ints) {
-		List<Enemy> allEnemies = arcadeMap.getMapEnemies();
+	public static String[] findEnemy(int[] ints) {
+		List<Enemy> allEnemies = mapEnemies;
 		for (int i = 0; i < allEnemies.size(); i++) {
 			if (Arrays.equals(allEnemies.get(i).getEnemyPos(), ints)) {
 				return new String[] {String.valueOf(i), String.valueOf(allEnemies.get(i).getLevel())};
@@ -311,7 +308,7 @@ public class Gui {
 					image = enemyImage.getScaledInstance(imageSize, imageSize, Image.SCALE_SMOOTH);
 					Object[] options = {"Fight", "Run"};
 					int choose = JOptionPane.showOptionDialog(null,
-							arcadeMap.getMapEnemies().get(Integer.parseInt(levelEnemy[0])).toString(),
+							mapEnemies.get(Integer.parseInt(levelEnemy[0])).toString(),
 							"Information about the enemy", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
 							new ImageIcon(image), options, options[0]);
 					switch (choose) {
@@ -340,31 +337,43 @@ public class Gui {
 				oneMove(heroCell(), emptyCell(), newPos);
 				heroPos[0] = newPos[0];
 				heroPos[1] = newPos[1];
+				maybeWinner();
 			}
 		}
-//TODO Game over
+
+		boolean maybeWinner() {
+			if (heroPos[0] == 0 || heroPos[1] == 0 || heroPos[0] == mapSize - 1 || heroPos[1] == mapSize - 1) {
+				winPanel = new ImagePanel(new ImageIcon(Glob.PIC + "won.png").getImage(), frame.getWidth(), frame.getHeight());
+				finalView(winPanel);
+				return true;
+			} else {
+				return false;
+			}
+		}
+
 		void fight(String levelEnemy, int[] newPos) {
-			if (arcadeMap.startFight(arcadeMap.getMapEnemies().get(Integer.parseInt(levelEnemy)))) {
-				arcadeMap.dropItem(arcadeMap.getMapEnemies().get(Integer.parseInt(levelEnemy)));
+			if (arcadeMap.startFight(mapEnemies.get(Integer.parseInt(levelEnemy)))) {
+				arcadeMap.dropItem(mapEnemies.get(Integer.parseInt(levelEnemy)));
 				int pickUP = JOptionPane.showConfirmDialog(null,
 						Glob.inform.toString(), "Pick Up Drop", JOptionPane.YES_NO_OPTION);
 				switch (pickUP) {
 					case 0:
-						arcadeMap.pickUpDrop(arcadeMap.getMapEnemies().get(Integer.parseInt(levelEnemy)), arcadeMap.getRandomDrop());
-						arcadeMap.getMapEnemies().remove(Integer.parseInt(levelEnemy));
-						if (arcadeMap.levelUp()) {
+						arcadeMap.pickUpDrop(mapEnemies.get(Integer.parseInt(levelEnemy)), arcadeMap.getRandomDrop());
+						mapEnemies.remove(Integer.parseInt(levelEnemy));
+						oneMove(heroCell(), emptyCell(), newPos);
+						heroPos[0] = newPos[0];
+						heroPos[1] = newPos[1];
+						if (maybeWinner()) { }
+						else if (arcadeMap.levelUp()) {
 							createMap.run();
 							JOptionPane.showMessageDialog(null, Glob.hero.toString(), "LEVEL UP", JOptionPane.INFORMATION_MESSAGE);
-						} else {
-							oneMove(heroCell(), emptyCell(), newPos);
-							heroPos[0] = newPos[0];
-							heroPos[1] = newPos[1];
 						}
 					default:
 						break;
 				}
 			} else {
-				finalView();
+				gameOverPanel = new ImagePanel(new ImageIcon(Glob.PIC + "die.png").getImage(), frame.getWidth(), frame.getHeight());
+				finalView(gameOverPanel);
 			}
 			progressHP.setValue(hero.getHP());
 			progressLevel.setValue(hero.getExp());
@@ -428,18 +437,16 @@ public class Gui {
 		}
 	}
 
-
-	public static class finalButtomAction implements ActionListener {
+	public static class finalButtonAction implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (((JButton) e.getSource()).getText().equals("EXIT")) {
 				Message.goodBye();
 			} else {
-				//frame.dispose();
 				hero = null;
-				//start();
 				panelMap.setVisible(false);
 				gameOverPanel.setVisible(false);
+				winPanel.setVisible(false);
 				createButton.setText("Create");
 				mainPanel.setVisible(true);
 				panelButtonCreateAndChoose.setVisible(true);
@@ -472,11 +479,13 @@ public class Gui {
 					}
 				} else if (((JButton) e.getSource()).getText().equals("Choose")){
 					chooseHero();
-					createButton.setText("Start");
-					//tableModel.setHeroes(heroManager.getAllTarget());
-					//tableModel.fireTableDataChanged();
-					panelFieldCreate.setVisible(false);
-					panelTableChoose.setVisible(true);
+					if (tableModel.getHeroes().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "Your heroes are empty. Create a new hero", "Warning", JOptionPane.WARNING_MESSAGE);
+					} else {
+						createButton.setText("Start");
+						panelFieldCreate.setVisible(false);
+						panelTableChoose.setVisible(true);
+					}
 				} else if (((JButton) e.getSource()).getText().equals("Start")){
 					if (hero != null) {
 						panelTableChoose.setVisible(false);

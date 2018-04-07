@@ -152,6 +152,7 @@ public class Console {
 				" | " + Glob.GREEN + "NO" + Glob.RESET + "]");
 		String tmp = scanner.nextLine();
 		while (tmp != null || scanner.hasNextLine()) {
+			assert tmp != null;
 			switch (tmp.toLowerCase()) {
 				case "yes":
 					return true;

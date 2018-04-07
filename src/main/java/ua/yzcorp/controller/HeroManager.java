@@ -1,6 +1,5 @@
 package ua.yzcorp.controller;
 
-import ua.yzcorp.model.Artifacts;
 import ua.yzcorp.model.Hero;
 import ua.yzcorp.model.Hero.*;
 import ua.yzcorp.view.Console;

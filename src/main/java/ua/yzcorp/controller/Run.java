@@ -4,7 +4,6 @@ import ua.yzcorp.view.Console;
 import ua.yzcorp.view.Gui;
 import ua.yzcorp.view.Message;
 
-import java.io.IOException;
 import java.util.NoSuchElementException;
 
 public class Run {

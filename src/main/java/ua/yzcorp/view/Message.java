@@ -28,6 +28,25 @@ public class Message {
 				"                                   \n" + Glob.RESET);
 		System.exit(0);
 	}
+
+	public static void youWon() {
+		System.out.println(Glob.YELLOW + "\n" +
+				"██╗   ██╗ ██████╗ ██╗   ██╗  \n" +
+				"╚██╗ ██╔╝██╔═══██╗██║   ██║  \n" +
+				" ╚████╔╝ ██║   ██║██║   ██║  \n" +
+				"  ╚██╔╝  ██║   ██║██║   ██║  \n" +
+				"   ██║   ╚██████╔╝╚██████╔╝  \n" +
+				"   ╚═╝    ╚═════╝  ╚═════╝   \n" +
+				"                             \n" +
+				"██╗    ██╗ ██████╗ ███╗   ██╗\n" +
+				"██║    ██║██╔═══██╗████╗  ██║\n" +
+				"██║ █╗ ██║██║   ██║██╔██╗ ██║\n" +
+				"██║███╗██║██║   ██║██║╚██╗██║\n" +
+				"╚███╔███╔╝╚██████╔╝██║ ╚████║\n" +
+				" ╚══╝╚══╝  ╚═════╝ ╚═╝  ╚═══╝\n" +
+				"                             \n" + Glob.RESET);
+	}
+
 	public static void chooseClass() {
 		System.out.println("Choose a hero class\n" + Glob.GREEN +
 				"༒ HUMAN;\n" +

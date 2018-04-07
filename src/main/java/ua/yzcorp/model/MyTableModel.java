@@ -16,6 +16,10 @@ public class MyTableModel extends AbstractTableModel {
 		this.heroes = heroes;
 	}
 
+	public List<Hero> getHeroes() {
+		return heroes;
+	}
+
 	@Override
 	public int getRowCount() {
 		return heroes.size();
