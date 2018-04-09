@@ -25,6 +25,9 @@ public class Run {
 			System.out.println("Usage: java -jar target/swingy.jar [console | gui]");
 		} catch (NoSuchElementException | NullPointerException e) {
 			Message.goodBye();
+		} catch (IllegalStateException e) {
+			Glob.SCANNER.close();
+			Message.goodBye();
 		}
 	}
 }

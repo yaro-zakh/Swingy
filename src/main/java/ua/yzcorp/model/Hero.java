@@ -14,7 +14,8 @@ public class Hero {
 	private int			def;
 	private int			HP;
 	private int			CC;
-	private int			mustLevel;
+	private int			mustLevel[];
+	private int			mustHP;
 	public static int[]	heroPos = new int[2];
 	private Artifacts	artifacts;
 
@@ -28,6 +29,14 @@ public class Hero {
 		this.HP = HP;
 		this.CC	= CC;
 		this.artifacts = artifacts == null ? new Artifacts() : artifacts;
+		this.mustHP = HP;
+		if (level == 1) {
+			this.mustLevel = new int[] {0,
+					((int) (level * 1000 + Math.pow(level - 1, 2) * 450))};
+		} else {
+			this.mustLevel = new int[] {((int) ((level - 1) * 1000 + Math.pow((level - 1) - 1, 2) * 450)),
+					((int) (level * 1000 + Math.pow(level - 1, 2) * 450))};
+		}
 	}
 
 	public void updateAllStat() {
@@ -38,13 +47,12 @@ public class Hero {
 		}
 	}
 
-
-	public int getMustLevel() {
+	public int[] getMustLevel() {
 		return mustLevel;
 	}
 
-	public void setMustLevel(int mustLevel) {
-		this.mustLevel = mustLevel;
+	public int getMustHP() {
+		return mustHP;
 	}
 
 	public void updateStat(String key, Item item) {

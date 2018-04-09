@@ -5,6 +5,7 @@ import ua.yzcorp.model.Enemy;
 import ua.yzcorp.model.Hero;
 
 import java.util.List;
+import java.util.Scanner;
 
 public class Glob {
 	public static int GUI;
@@ -20,6 +21,7 @@ public class Glob {
 	public static List<Enemy> MAPENEMIES;
 	public static StringBuilder INFORM;
 	public static ArcadeMap MAP;
+	public static Scanner SCANNER = new Scanner(System.in);
 
 	public static void onGui() {
 		YELLOW = "༺";

@@ -6,21 +6,20 @@ import ua.yzcorp.model.ClassHero;
 import ua.yzcorp.model.Hero;
 import ua.yzcorp.model.Hero.HeroBuilder;
 import static ua.yzcorp.controller.Glob.MAP;
+import static ua.yzcorp.controller.Glob.SCANNER;
 
 import java.util.List;
-import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Console {
 	private static HeroManager heroManager = new HeroManager();
-	private static Scanner scanner = new Scanner(System.in);
 
 	public static void start() {
 		Glob.onConsole();
 		Message.chooseOrCreate();
-		while (scanner.hasNextLine()) {
-			String tmp = scanner.nextLine();
+		while (SCANNER.hasNextLine()) {
+			String tmp = SCANNER.nextLine();
 			if (heroManager.startListener(tmp)) {
 				return;
 			}
@@ -33,7 +32,7 @@ public class Console {
 				}
 			}
 		}
-		scanner.close();
+		SCANNER.close();
 	}
 
 	public static Hero chooseHero() {
@@ -46,8 +45,8 @@ public class Console {
 		Pattern delete = Pattern.compile("^delete \\[\\d+]$", Pattern.CASE_INSENSITIVE);
 		Pattern nbr = Pattern.compile("(^\\d+$)");
 		Message.chooseHero(heroes);
-		while (scanner.hasNextLine()) {
-			String line = scanner.nextLine();
+		while (SCANNER.hasNextLine()) {
+			String line = SCANNER.nextLine();
 			Matcher matchDel = delete.matcher(line);
 			Matcher matchNbr = nbr.matcher(line);
 			if (!matchDel.matches() && !matchNbr.matches()) {
@@ -83,8 +82,8 @@ public class Console {
 	public static Hero createHero() {
 		String classHero = chooseClass();		//choose class Hero and getting information about each class
 		Message.print("Enter the name of your hero");		//create name Hero
-		while (scanner.hasNextLine()) {
-			String nameHero = scanner.nextLine();
+		while (SCANNER.hasNextLine()) {
+			String nameHero = SCANNER.nextLine();
 			if (nameHero == null || nameHero.isEmpty()) {
 				Message.print(heroManager.emptyName());
 			} else if (!HeroManager.checkName(nameHero)) {
@@ -114,8 +113,8 @@ public class Console {
 
 	private static String chooseClass() {
 		Message.chooseClass();
-		while (scanner.hasNextLine()) {
-			ClassHero classHero = ClassHero.getClass(scanner.nextLine());
+		while (SCANNER.hasNextLine()) {
+			ClassHero classHero = ClassHero.getClass(SCANNER.nextLine());
 			switch (classHero.toString().toLowerCase()) {
 				case "human":
 					return "Human";
@@ -141,11 +140,11 @@ public class Console {
 				+ Glob.GREEN + "HUMAN, ORC, ELF " + Glob.RESET + "or " +
 				Glob.GREEN + "DWARF" + Glob.RESET);
 		DefaultStat defaultStat = new DefaultStat();
-		Message.print(defaultStat.toString(scanner.nextLine()));
+		Message.print(defaultStat.toString(SCANNER.nextLine()));
 		Message.print("Continue? [" + Glob.GREEN + "YES" + Glob.RESET +
 				" | " + Glob.GREEN + "NO" + Glob.RESET + "]");
-		String tmp = scanner.nextLine();
-		while (tmp != null || scanner.hasNextLine()) {
+		String tmp = SCANNER.nextLine();
+		while (tmp != null || SCANNER.hasNextLine()) {
 			assert tmp != null;
 			switch (tmp.toLowerCase()) {
 				case "yes":
@@ -156,7 +155,7 @@ public class Console {
 				default:
 					Message.print("Select " + Glob.GREEN + "YES" + Glob.RESET +
 							" or " + Glob.GREEN + "NO" + Glob.RESET + ".");
-					tmp = scanner.nextLine();
+					tmp = SCANNER.nextLine();
 					break;
 			}
 		}

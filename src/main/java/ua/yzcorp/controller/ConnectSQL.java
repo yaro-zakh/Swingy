@@ -65,4 +65,3 @@ public class ConnectSQL {
 		return connection;
 	}
 }
-

@@ -65,9 +65,22 @@ public class Gui {
 	private static JMenuItem switchItem;
 
 	public static void startWithConsole() {
-		start();
-		mainPanel.setVisible(false);
-		createMap.run();
+		Glob.onGui();
+		if (frame == null) {
+			start();
+		} else {
+			panelMap.setVisible(false);
+			gameOverPanel.setVisible(false);
+			winPanel.setVisible(false);
+			panelTableChoose.setVisible(false);
+			frame.setVisible(true);
+			createButton.setText("Create");
+			mainPanel.setVisible(true);
+		}
+		if (HERO != null) {
+			createHeroInfoBar();
+			createMap.run();
+		}
 	}
 
 	public static void start() {
@@ -89,7 +102,7 @@ public class Gui {
 	}
 
 	private static void initAllComp() {
-		frame = newWindow();
+		newWindow();
 		createButton = new JButton("Create");
 		chooseButton = new JButton("Choose");
 		mainPanel = new ImagePanel(new ImageIcon(Glob.PIC + "main.png").getImage(), frame.getWidth(), frame.getHeight());
@@ -107,10 +120,10 @@ public class Gui {
 		chooseButton.setBackground(new Color(0, 0, 0, 0));
 		chooseButton.setForeground(Color.WHITE);
 
-		panelFieldCreate.setBackground(new Color(0,0,0,200));					//init create hero field
+		panelFieldCreate.setBackground(new Color(0,0,0,200));
 		panelFieldCreate.setLayout(new GridBagLayout());
 
-		textPane.setEditable(false);														//init and add text about Default stat Heroes
+		textPane.setEditable(false);
 		textPane.setVisible(false);
 		textPane.setBackground(new Color(0, 0, 0, 0));
 		doc = textPane.getStyledDocument();
@@ -141,14 +154,26 @@ public class Gui {
 				frame.dispose();
 				Glob.onConsole();
 				Console.start();
-			} else if (HERO.getHP() > 0){
+			} else if (heroPos[0] == 0 || heroPos[1] == 0 || heroPos[0] == mapSize - 1 || heroPos[1] == mapSize - 1) {
+				HERO = null;
+				frame.dispose();
+				Glob.onConsole();
+				Message.youWon();
+				if (MainGame.finalChoose()) {
+					Console.start();
+				}
+			} else if (HERO.getHP() > 0) {
 				frame.dispose();
 				Glob.onConsole();
 				MainGame.startGame();
 			} else if (HERO.getHP() <= 0) {
+				HERO = null;
 				frame.dispose();
 				Glob.onConsole();
-				MainGame.startGame();
+				Message.gameOver();
+				if (MainGame.finalChoose()) {
+					Console.start();
+				}
 			}
 		});
 		return menu;
@@ -179,15 +204,15 @@ public class Gui {
 		heroInfoPanel.setLayout(new BoxLayout(heroInfoPanel, BoxLayout.Y_AXIS));
 		heroInfoPanel.setBackground(new Color(0, 0, 0, 0));
 		progressHP.setForeground(new Color(128, 21, 21, 150));
-		progressHP.setMaximum(HERO.getHP());
+		progressHP.setMaximum(HERO.getMustHP());
 		progressHP.setMinimum(0);
 		progressHP.setValue(HERO.getHP());
 		progressHP.setStringPainted(true);
 		progressHP.setBorderPainted(false);
 		progressHP.setPreferredSize(new Dimension(frame.getWidth(), 15));
 		progressLevel.setForeground(new Color(13, 77, 77, 150));
-		progressLevel.setMaximum(HERO.getMustLevel());
-		progressLevel.setMinimum(HERO.getExp());
+		progressLevel.setMaximum(HERO.getMustLevel()[1]);
+		progressLevel.setMinimum(HERO.getMustLevel()[0]);
 		progressLevel.setValue(HERO.getExp());
 		progressLevel.setStringPainted(true);
 		progressLevel.setBorderPainted(false);
@@ -489,7 +514,6 @@ public class Gui {
 				createButton.setText("Create");
 				panelTableChoose.setVisible(false);
 				mainPanel.setVisible(true);
-				panelButtonCreateAndChoose.setVisible(true);
 			}
 		}
 	}
@@ -498,8 +522,8 @@ public class Gui {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() instanceof JButton) {
-				if (!((JButton) e.getSource()).getText().equals("Save") && !((JButton) e.getSource()).getText().equals("Choose") &&
-						!((JButton) e.getSource()).getText().equals("Start")) {
+				if (((JButton) e.getSource()).getText().equals("Create")) {
+					switchItem.setEnabled(false);
 					createButton.setText("Save");
 					panelTableChoose.setVisible(false);
 					panelFieldCreate.setVisible(true);
@@ -517,7 +541,8 @@ public class Gui {
 						createButton.setText("Start");
 						panelFieldCreate.setVisible(false);
 					}
-				} else if (((JButton) e.getSource()).getText().equals("Choose")){
+				} else if (((JButton) e.getSource()).getText().equals("Choose")) {
+					switchItem.setEnabled(false);
 					chooseHero();
 					if (tableModel.getHeroes().isEmpty()) {
 						JOptionPane.showMessageDialog(null, "Your heroes are empty. Create a new hero", "Warning", JOptionPane.WARNING_MESSAGE);
@@ -526,12 +551,13 @@ public class Gui {
 						panelFieldCreate.setVisible(false);
 						panelTableChoose.setVisible(true);
 					}
-				} else if (((JButton) e.getSource()).getText().equals("Start")){
+				} else if (((JButton) e.getSource()).getText().equals("Start")) {
 					createHeroInfoBar();
 					MAP = new ArcadeMap();
 					if (HERO != null) {
 						mainPanel.setVisible(false);
 						createMap.run();
+						switchItem.setEnabled(true);
 					} else {
 						JOptionPane.showMessageDialog(null, "Choose a hero", "Warning", JOptionPane.WARNING_MESSAGE);
 					}
@@ -563,7 +589,7 @@ public class Gui {
 	}
 
 	private static JFrame newWindow() {
-		JFrame frame = new JFrame("Swingy");
+		frame = new JFrame("Swingy");
 		frame.setSize(700, 700);
 		frame.setLayout(new BorderLayout());
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);

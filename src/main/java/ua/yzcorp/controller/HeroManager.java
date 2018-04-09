@@ -27,7 +27,7 @@ public class HeroManager implements Manager<Hero> {
 				HERO = Console.chooseHero();
 				break;
 			case "gui":
-				Gui.start();
+				Gui.startWithConsole();
 				return true;
 			case "exit":
 				Message.goodBye();

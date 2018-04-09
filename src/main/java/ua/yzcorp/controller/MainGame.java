@@ -1,6 +1,5 @@
 package ua.yzcorp.controller;
 
-import ua.yzcorp.model.ArcadeMap;
 import ua.yzcorp.model.Enemy;
 import ua.yzcorp.model.Item;
 import ua.yzcorp.view.Console;
@@ -9,16 +8,15 @@ import ua.yzcorp.view.Message;
 
 import java.util.Arrays;
 import java.util.Random;
-import java.util.Scanner;
 
 import static ua.yzcorp.controller.Glob.HERO;
 import static ua.yzcorp.controller.Glob.MAPENEMIES;
 import static ua.yzcorp.controller.Glob.MAP;
+import static ua.yzcorp.controller.Glob.SCANNER;
 import static ua.yzcorp.model.Hero.heroPos;
 
 public class MainGame {
 
-	private static Scanner scanner = new Scanner(System.in);
 	private static char [][] arcadeMap;
 	private static int [] oldPos = new int[2];
 	private static String[] levelEnemy;
@@ -28,8 +26,8 @@ public class MainGame {
 	public static boolean startGame() {
 		updateMap();
 		printArcadeMap(true);
-		while (HERO.getHP() > 0 && scanner.hasNextLine()) {
-			String move = scanner.nextLine();
+		while (HERO.getHP() > 0 && SCANNER.hasNextLine()) {
+			String move = SCANNER.nextLine();
 			switch (move.toLowerCase()) {
 				case "w":
 					setHeroPos(new int[] {-1, 0});
@@ -53,12 +51,14 @@ public class MainGame {
 				case "gui":
 					Gui.startWithConsole();
 					return true;
+				case "exit":
+					Message.goodBye();
 				default:
 					Message.print(Glob.RED + "Choose the right side" + Glob.RESET);
 					break;
 			}
 		}
-		scanner.close();
+		SCANNER.close();
 		return false;
 	}
 
@@ -119,15 +119,18 @@ public class MainGame {
 	}
 
 	public static boolean finalChoose() {
-		String line = scanner.nextLine();
-		while (scanner.hasNextLine()) {
+		Message.print("What do you want to do?\n" +
+				Glob.GREEN + "1. " + Glob.RESET + "Try again\n" +
+				Glob.GREEN + "2. " + Glob.RESET + "Exit\n");
+		while (SCANNER.hasNextLine()) {
+			String line = SCANNER.nextLine();
 			switch (line.toLowerCase()) {
-				case "try again":
+				case "1":
 					return true;
-				case "exit":
+				case "2":
 					Message.goodBye();
 				default:
-					Message.print("Enter correct command!\n");
+					Message.print(Glob.RED + "Enter correct command!" + Glob.RESET + "\n");
 			}
 		}
 		return false;
@@ -140,11 +143,13 @@ public class MainGame {
 				Message.gameOver();
 				arcadeMap[heroPos[0]][heroPos[1]] = '☠';
 				printArcadeMap(false);
+				HERO = null;
 				if (finalChoose()) {
 					Console.start();
 				}
 			} else {
 				dropItem(MAPENEMIES.get(Integer.parseInt(levelEnemy[0])));
+				MAPENEMIES.remove(Integer.parseInt(levelEnemy[0]));
 			}
 			if (levelUp()) {
 				Message.levelUp();
@@ -155,7 +160,10 @@ public class MainGame {
 		}
 		if (heroPos[1] == 0 || heroPos[1] == arcadeMap.length - 1 || heroPos[0] == 0 || heroPos[0] == arcadeMap.length -1) {
 			Message.youWon();
-			Console.start();
+			HERO = null;
+			if (finalChoose()) {
+				Console.start();
+			}
 		} else {
 			arcadeMap[oldPos[0]][oldPos[1]] = asciiEmpty;
 			arcadeMap[heroPos[0]][heroPos[1]] = asciiHero;
@@ -173,8 +181,8 @@ public class MainGame {
 			Message.print(MAPENEMIES.get(Integer.parseInt(levelEnemy[0])).toString());
 			Message.print("Select an action: " + Glob.GR_BOLD + "RUN " + Glob.RESET +
 					"or " + Glob.GR_BOLD + "FIGHT" + Glob.RESET);
-			while (scanner.hasNextLine()) {
-				String runOrFight = scanner.nextLine();
+			while (SCANNER.hasNextLine()) {
+				String runOrFight = SCANNER.nextLine();
 				switch (runOrFight.toLowerCase()) {
 					case "run":
 						int[] trueOrFalse = {1, 0};
@@ -251,7 +259,7 @@ public class MainGame {
 
 	public static boolean levelUp() {
 		HeroManager heroManager = new HeroManager();
-		if (HERO.getExp() >= HERO.getMustLevel()) {
+		if (HERO.getExp() >= HERO.getMustLevel()[1]) {
 			HERO.setLevel(HERO.getLevel() + 1);
 			HERO = Console.getHero(HERO.getClassHero(), HERO.getName(), HERO.getLevel(), HERO.getExp(), HERO, 10);
 			HERO.updateAllStat();
@@ -274,8 +282,8 @@ public class MainGame {
 		if (Glob.GUI == 0) {
 			Message.print(Glob.INFORM.toString());
 			Message.print("Pick up drop: " + Glob.GREEN + "YES" + Glob.RESET + " or " + Glob.GREEN + "NO" + Glob.RESET);
-			String line = scanner.nextLine();
-			while (line != null || scanner.hasNextLine()) {
+			String line = SCANNER.nextLine();
+			while (line != null || SCANNER.hasNextLine()) {
 				assert line != null;
 				switch (line.toLowerCase()) {
 					case "yes":
@@ -285,7 +293,7 @@ public class MainGame {
 					default:
 						Message.print("Select " + Glob.GREEN + "YES" + Glob.RESET +
 								" or " + Glob.GREEN + "NO" + Glob.RESET + ".");
-						line = scanner.nextLine();
+						line = SCANNER.nextLine();
 						break;
 				}
 			}
