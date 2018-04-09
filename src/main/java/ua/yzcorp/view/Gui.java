@@ -60,8 +60,10 @@ public class Gui {
 	private static JButton exitButton = new JButton("EXIT");
 	private static JButton tryAgainButton = new JButton("Try again");
 	private static JPanel finalButtonPanel = new JPanel();
+	private static JMenuItem switchItem;
 
 	public static void start() {
+		Glob.onGui();
 		initAllComp();
 		panelButtonCreateAndChoose.add(createButton, new GridBagConstraints(0, 0, 1, 1, 1, 0,
 				GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL,
@@ -114,6 +116,27 @@ public class Gui {
 
 		gameOverPanel = new ImagePanel(new ImageIcon(Glob.PIC + "die.png").getImage(), frame.getWidth(), frame.getHeight());
 		winPanel = new ImagePanel(new ImageIcon(Glob.PIC + "won.png").getImage(), frame.getWidth(), frame.getHeight());
+
+		JMenuBar menuBar = new JMenuBar();
+		menuBar.setPreferredSize(new Dimension(frame.getWidth(), 15));
+		menuBar.add(createFileMenu());
+		frame.setJMenuBar(menuBar);
+
+	}
+
+	private static JMenu createFileMenu() {
+		JMenu menu = new JMenu("Menu");
+		switchItem = new JMenuItem("Console view",
+				new ImageIcon(Glob.PIC + "switch.png"));
+		menu.add(switchItem);
+		switchItem.addActionListener(e -> {
+			if (hero == null) {
+				frame.dispose();
+				Glob.onConsole();
+				Console.start();
+			}
+		});
+		return menu;
 	}
 
 	public static class CreateStartMap extends Thread {
@@ -147,6 +170,7 @@ public class Gui {
 		progressHP.setValue(hero.getHP());
 		progressHP.setStringPainted(true);
 		progressHP.setBorderPainted(false);
+		progressHP.setPreferredSize(new Dimension(frame.getWidth(), 15));
 		progressLevel.setForeground(new Color(13, 77, 77, 150));
 		progressLevel.setMaximum(hero.getMustLevel());
 		progressLevel.setMinimum(hero.getExp());
@@ -157,7 +181,7 @@ public class Gui {
 		heroInfoPanel.add(progressLevel);
 		progressLevel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
 		progressHP.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-		frame.getContentPane().add(heroInfoPanel, BorderLayout.PAGE_START);
+		frame.getContentPane().add(heroInfoPanel, BorderLayout.PAGE_END);
 	}
 
 	public static void finalView(ImagePanel finalPanel) {

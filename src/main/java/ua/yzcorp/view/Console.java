@@ -1,9 +1,6 @@
 package ua.yzcorp.view;
 
-import ua.yzcorp.controller.ConnectSQL;
-import ua.yzcorp.controller.DefaultStat;
-import ua.yzcorp.controller.Glob;
-import ua.yzcorp.controller.HeroManager;
+import ua.yzcorp.controller.*;
 import ua.yzcorp.model.ArcadeMap;
 import ua.yzcorp.model.ClassHero;
 import ua.yzcorp.model.Hero;
@@ -16,17 +13,17 @@ import java.util.regex.Pattern;
 public class Console {
 	private static HeroManager heroManager = new HeroManager();
 	public static void start() {
-		Hero hero;
-
+		Glob.onConsole();
 		Scanner scanner = new Scanner(System.in);
 		ArcadeMap arcadeMap;
-
 		Message.chooseOrCreate();
 		while (scanner.hasNextLine()) {
 			String tmp = scanner.nextLine();
-			heroManager.startListener(tmp);
+			if (heroManager.startListener(tmp)) {
+				return;
+			}
 			if (Glob.hero != null) {
-				Message.print(Glob.hero.toString());		//print full info about Hero
+				Message.print(Glob.hero.toString());
 				Message.startGame();
 				arcadeMap = new ArcadeMap();
 				arcadeMap.startGame();

@@ -330,10 +330,10 @@ public class ArcadeMap {
 		int randChoose = random.nextInt(items.length);
 		randomDrop = items[randChoose];
 		Glob.inform.append(Glob.GR_BOLD).append("Your DROP is:").append(Glob.RESET).append("\n").append(artifacts.get(enemy.getLevel() - 1).toString(randomDrop)).append("\n");
-		if (Run.GUI == 1) {
+		if (Glob.GUI == 1) {
 			Glob.inform.append("Pick up drop?");
 		}
-		if (Run.GUI == 0) {
+		if (Glob.GUI == 0) {
 			Message.print(Glob.inform.toString());
 			Message.print("Pick up drop: " + Glob.GREEN + "YES" + Glob.RESET + " or " + Glob.GREEN + "NO" + Glob.RESET);
 			Scanner scanner = new Scanner(System.in);

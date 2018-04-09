@@ -3,6 +3,7 @@ package ua.yzcorp.controller;
 import ua.yzcorp.model.Hero;
 import ua.yzcorp.model.Hero.*;
 import ua.yzcorp.view.Console;
+import ua.yzcorp.view.Gui;
 import ua.yzcorp.view.Message;
 
 import java.sql.*;
@@ -14,22 +15,26 @@ public class HeroManager implements Manager<Hero> {
 	public HeroManager() {
 	}
 
-	public void startListener(String text) {
+	public boolean startListener(String text) {
 		switch (text.toLowerCase()) {
 			case "create":
 				Glob.hero = Console.createHero();
-				save(Glob.hero, ConnectSQL.getConnection());		//get info from input about new Hero and add to DataBase
+				save(Glob.hero, ConnectSQL.getConnection());
 				Message.print("You have successfully created a new hero");
 				break;
 			case "choose":
 				Glob.hero = Console.chooseHero();
 				break;
+			case "gui":
+				Gui.start();
+				return true;
 			case "exit":
 				Message.goodBye();
 				break;
 			default:
 				Message.print(Glob.RED + "Please enter correct command" + Glob.RESET);
 		}
+		return false;
 	}
 
 	public String emptyName() {

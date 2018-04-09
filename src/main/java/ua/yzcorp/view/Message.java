@@ -62,12 +62,15 @@ public class Message {
 		System.out.format("%-7s - " + Glob.BLUE + "%-10s\n" + Glob.RESET, "☢ East", "press 'D'");
 		System.out.format("%7s : " + Glob.GREEN + "%-10s\n" + Glob.RESET, "My", "INFO");
 	}
+
 	public static void chooseOrCreate() {
-		System.out.println("Do you want to "
-				+ Glob.GREEN +"CREATE" + Glob.RESET +
-				" a hero, " + Glob.GREEN + "CHOOSE" + Glob.RESET +
-				" a created one or " + Glob.GREEN + "EXIT" + Glob.RESET +"?");
+		System.out.println("Choose one of the commands:\n" +
+				"1. " + Glob.GREEN + "CREATE" + Glob.GRAY + " (create a new hero)" + Glob.RESET + "\n" +
+				"2. " + Glob.GREEN + "CHOOSE" + Glob.GRAY + " (choose one of the already created heroes)" + Glob.RESET + "\n" +
+				"3. " + Glob.GREEN + "GUI" + Glob.GRAY + " (switch to HUI)" + Glob.RESET + "\n" +
+				"4. " + Glob.GREEN + "EXIT" + Glob.GRAY + " (leave the game)" + Glob.RESET + "\n");
 	}
+
 	public static void chooseHero(List<Hero> heroes) {
 		Message.print("Enter the hero number from " + Glob.GREEN + "0" + Glob.RESET + " to " +
 				Glob.GREEN + (heroes.size() - 1) + Glob.RESET + ", " +
