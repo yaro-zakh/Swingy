@@ -99,7 +99,7 @@ public class DefaultStat {
 								"balanced abilities. Worship the \n" +
 								"Goddess of Light Einhasad.\n");
 				for (Map.Entry<String, Integer> entry: human.entrySet()) {
-					defStat.append(entry.getKey()).append(" ̶ ").append(entry.getValue()).append("\n");
+					defStat.append(entry.getKey()).append(":").append(entry.getValue()).append("\n");
 				}
 				break;
 			case "orc":
@@ -110,7 +110,7 @@ public class DefaultStat {
 								"power and immense vitality. They worship \n" +
 								"the God of Fire of Pa'agrio.\n");
 				for (Map.Entry<String, Integer> entry: orc.entrySet()) {
-					defStat.append(entry.getKey()).append(" ̶ ").append(entry.getValue()).append("\n");
+					defStat.append(entry.getKey()).append(":").append(entry.getValue()).append("\n");
 				}
 				break;
 			case "elf":
@@ -120,7 +120,7 @@ public class DefaultStat {
 								"by the lightness of flesh and dexterity. \n" +
 								"They worship the Goddess of Water Eve.\n");
 				for (Map.Entry<String, Integer> entry: elf.entrySet()) {
-					defStat.append(entry.getKey()).append(" ̶ ").append(entry.getValue()).append("\n");
+					defStat.append(entry.getKey()).append(":").append(entry.getValue()).append("\n");
 				}
 				break;
 			case "dwarf":
@@ -131,7 +131,7 @@ public class DefaultStat {
 								"of the ability to apply to the arts. They \n" +
 								"worship the God of the Earth.\n");
 				for (Map.Entry<String, Integer> entry: dwarf.entrySet()) {
-					defStat.append(entry.getKey()).append(" ̶ ").append(entry.getValue()).append("\n");
+					defStat.append(entry.getKey()).append(":").append(entry.getValue()).append("\n");
 				}
 				break;
 			default:

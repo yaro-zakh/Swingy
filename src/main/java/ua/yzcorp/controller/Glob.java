@@ -1,5 +1,6 @@
 package ua.yzcorp.controller;
 
+import ua.yzcorp.model.ArcadeMap;
 import ua.yzcorp.model.Enemy;
 import ua.yzcorp.model.Hero;
 
@@ -15,9 +16,10 @@ public class Glob {
 	public static String RED;
 	public static String GRAY;
 	public static String RESET;
-	public static Hero hero;
-	public static List<Enemy> mapEnemies;
-	public static StringBuilder inform;
+	public static Hero HERO;
+	public static List<Enemy> MAPENEMIES;
+	public static StringBuilder INFORM;
+	public static ArcadeMap MAP;
 
 	public static void onGui() {
 		YELLOW = "༺";

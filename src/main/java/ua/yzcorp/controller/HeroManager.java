@@ -5,6 +5,7 @@ import ua.yzcorp.model.Hero.*;
 import ua.yzcorp.view.Console;
 import ua.yzcorp.view.Gui;
 import ua.yzcorp.view.Message;
+import static ua.yzcorp.controller.Glob.HERO;
 
 import java.sql.*;
 import java.util.LinkedList;
@@ -18,12 +19,12 @@ public class HeroManager implements Manager<Hero> {
 	public boolean startListener(String text) {
 		switch (text.toLowerCase()) {
 			case "create":
-				Glob.hero = Console.createHero();
-				save(Glob.hero, ConnectSQL.getConnection());
+				HERO = Console.createHero();
+				save(HERO, ConnectSQL.getConnection());
 				Message.print("You have successfully created a new hero");
 				break;
 			case "choose":
-				Glob.hero = Console.chooseHero();
+				HERO = Console.chooseHero();
 				break;
 			case "gui":
 				Gui.start();

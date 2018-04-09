@@ -4,9 +4,10 @@ import ua.yzcorp.controller.*;
 import ua.yzcorp.model.ArcadeMap;
 import ua.yzcorp.model.Enemy;
 import ua.yzcorp.model.MyTableModel;
-import static ua.yzcorp.controller.Glob.hero;
+import static ua.yzcorp.controller.Glob.HERO;
 import static ua.yzcorp.model.Hero.heroPos;
-import static ua.yzcorp.controller.Glob.mapEnemies;
+import static ua.yzcorp.controller.Glob.MAPENEMIES;
+import static ua.yzcorp.controller.Glob.MAP;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -35,9 +36,12 @@ public class Gui {
 	private static JPanel panelTableChoose = new JPanel();
 	private static JPanel panelFieldCreate = new JPanel();
 	private static ImagePanel mainPanel;
+
 	private static MyTableModel tableModel = null;
 	private static JTable allHeroesTable;
 	private static JScrollPane scrollPane;
+	private static Integer selectRow = null;
+
 	private static StyledDocument doc;
 	private static SimpleAttributeSet center;
 	private static ImagePanel panelMap;
@@ -45,9 +49,7 @@ public class Gui {
 	private static JPanel[][] cell;
 	private static BufferedImage heroImage;
 	private static BufferedImage enemyImage;
-	private static BufferedImage fightImage;
 	private static Image image;
-	private static ArcadeMap arcadeMap;
 	private static int imageSize;
 	private static int mapSize;
 
@@ -61,6 +63,12 @@ public class Gui {
 	private static JButton tryAgainButton = new JButton("Try again");
 	private static JPanel finalButtonPanel = new JPanel();
 	private static JMenuItem switchItem;
+
+	public static void startWithConsole() {
+		start();
+		mainPanel.setVisible(false);
+		createMap.run();
+	}
 
 	public static void start() {
 		Glob.onGui();
@@ -121,7 +129,6 @@ public class Gui {
 		menuBar.setPreferredSize(new Dimension(frame.getWidth(), 15));
 		menuBar.add(createFileMenu());
 		frame.setJMenuBar(menuBar);
-
 	}
 
 	private static JMenu createFileMenu() {
@@ -130,10 +137,18 @@ public class Gui {
 				new ImageIcon(Glob.PIC + "switch.png"));
 		menu.add(switchItem);
 		switchItem.addActionListener(e -> {
-			if (hero == null) {
+			if (HERO == null) {
 				frame.dispose();
 				Glob.onConsole();
 				Console.start();
+			} else if (HERO.getHP() > 0){
+				frame.dispose();
+				Glob.onConsole();
+				MainGame.startGame();
+			} else if (HERO.getHP() <= 0) {
+				frame.dispose();
+				Glob.onConsole();
+				MainGame.startGame();
 			}
 		});
 		return menu;
@@ -144,13 +159,12 @@ public class Gui {
 		public void run() {
 			super.run();
 			try {
-				arcadeMap = new ArcadeMap();
-				mapSize = arcadeMap.getSize();
+				mapSize = MAP.getSize();
 				imageSize = panelMap.getWidth() / mapSize;
-				heroImage = ImageIO.read(new File(Glob.PIC + hero.getClassHero().toLowerCase() + ".png"));
+				heroImage = ImageIO.read(new File(Glob.PIC + HERO.getClassHero().toLowerCase() + ".png"));
 				panelMap.setLayout(new GridLayout(mapSize, mapSize, 2, 2));
 				cell = new JPanel[mapSize][mapSize];
-				createHeroInfoBar();
+				frame.getContentPane().add(heroInfoPanel, BorderLayout.PAGE_END);
 				updateMap();
 				mainPanel.setVisible(false);
 				frame.getContentPane().add(panelMap, BorderLayout.CENTER);
@@ -165,23 +179,23 @@ public class Gui {
 		heroInfoPanel.setLayout(new BoxLayout(heroInfoPanel, BoxLayout.Y_AXIS));
 		heroInfoPanel.setBackground(new Color(0, 0, 0, 0));
 		progressHP.setForeground(new Color(128, 21, 21, 150));
-		progressHP.setMaximum(hero.getHP());
+		progressHP.setMaximum(HERO.getHP());
 		progressHP.setMinimum(0);
-		progressHP.setValue(hero.getHP());
+		progressHP.setValue(HERO.getHP());
 		progressHP.setStringPainted(true);
 		progressHP.setBorderPainted(false);
 		progressHP.setPreferredSize(new Dimension(frame.getWidth(), 15));
 		progressLevel.setForeground(new Color(13, 77, 77, 150));
-		progressLevel.setMaximum(hero.getMustLevel());
-		progressLevel.setMinimum(hero.getExp());
-		progressLevel.setValue(hero.getExp());
+		progressLevel.setMaximum(HERO.getMustLevel());
+		progressLevel.setMinimum(HERO.getExp());
+		progressLevel.setValue(HERO.getExp());
 		progressLevel.setStringPainted(true);
 		progressLevel.setBorderPainted(false);
+		progressLevel.setPreferredSize(new Dimension(frame.getWidth(), 15));
 		heroInfoPanel.add(progressHP);
 		heroInfoPanel.add(progressLevel);
 		progressLevel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
 		progressHP.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-		frame.getContentPane().add(heroInfoPanel, BorderLayout.PAGE_END);
 	}
 
 	public static void finalView(ImagePanel finalPanel) {
@@ -245,7 +259,7 @@ public class Gui {
 	}
 
 	public static String[] findEnemy(int[] ints) {
-		List<Enemy> allEnemies = mapEnemies;
+		List<Enemy> allEnemies = MAPENEMIES;
 		for (int i = 0; i < allEnemies.size(); i++) {
 			if (Arrays.equals(allEnemies.get(i).getEnemyPos(), ints)) {
 				return new String[] {String.valueOf(i), String.valueOf(allEnemies.get(i).getLevel())};
@@ -332,7 +346,7 @@ public class Gui {
 					image = enemyImage.getScaledInstance(imageSize, imageSize, Image.SCALE_SMOOTH);
 					Object[] options = {"Fight", "Run"};
 					int choose = JOptionPane.showOptionDialog(null,
-							mapEnemies.get(Integer.parseInt(levelEnemy[0])).toString(),
+							MAPENEMIES.get(Integer.parseInt(levelEnemy[0])).toString(),
 							"Information about the enemy", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
 							new ImageIcon(image), options, options[0]);
 					switch (choose) {
@@ -376,21 +390,22 @@ public class Gui {
 		}
 
 		void fight(String levelEnemy, int[] newPos) {
-			if (arcadeMap.startFight(mapEnemies.get(Integer.parseInt(levelEnemy)))) {
-				arcadeMap.dropItem(mapEnemies.get(Integer.parseInt(levelEnemy)));
+			if (MainGame.startFight(MAPENEMIES.get(Integer.parseInt(levelEnemy)))) {
+				MainGame.dropItem(MAPENEMIES.get(Integer.parseInt(levelEnemy)));
 				int pickUP = JOptionPane.showConfirmDialog(null,
-						Glob.inform.toString(), "Pick Up Drop", JOptionPane.YES_NO_OPTION);
+						Glob.INFORM.toString(), "Pick Up Drop", JOptionPane.YES_NO_OPTION);
 				switch (pickUP) {
 					case 0:
-						arcadeMap.pickUpDrop(mapEnemies.get(Integer.parseInt(levelEnemy)), arcadeMap.getRandomDrop());
-						mapEnemies.remove(Integer.parseInt(levelEnemy));
+						MainGame.pickUpDrop(MAPENEMIES.get(Integer.parseInt(levelEnemy)), MAP.getRandomDrop());
+						MAPENEMIES.remove(Integer.parseInt(levelEnemy));
 						oneMove(heroCell(), emptyCell(), newPos);
 						heroPos[0] = newPos[0];
 						heroPos[1] = newPos[1];
 						if (maybeWinner()) { }
-						else if (arcadeMap.levelUp()) {
+						else if (MainGame.levelUp()) {
+							MAP.updateMainInfo();
 							createMap.run();
-							JOptionPane.showMessageDialog(null, Glob.hero.toString(), "LEVEL UP", JOptionPane.INFORMATION_MESSAGE);
+							JOptionPane.showMessageDialog(null, Glob.HERO.toString(), "LEVEL UP", JOptionPane.INFORMATION_MESSAGE);
 						}
 					default:
 						break;
@@ -399,8 +414,8 @@ public class Gui {
 				gameOverPanel = new ImagePanel(new ImageIcon(Glob.PIC + "die.png").getImage(), frame.getWidth(), frame.getHeight());
 				finalView(gameOverPanel);
 			}
-			progressHP.setValue(hero.getHP());
-			progressLevel.setValue(hero.getExp());
+			progressHP.setValue(HERO.getHP());
+			progressLevel.setValue(HERO.getExp());
 		}
 
 		private void oneMove(JPanel newCell, JPanel curCell, int[] newPos) {
@@ -425,7 +440,7 @@ public class Gui {
 			try {
 				fight = new JPanel();
 				fight.setLayout(new BorderLayout());
-				fightImage = ImageIO.read(new File(Glob.PIC + "fight.png"));
+				BufferedImage fightImage = ImageIO.read(new File(Glob.PIC + "fight.png"));
 				image = fightImage.getScaledInstance(imageSize, imageSize, Image.SCALE_SMOOTH);
 				JLabel picLabel = new JLabel(new ImageIcon(image));
 				fight.add(picLabel, BorderLayout.CENTER);
@@ -467,11 +482,12 @@ public class Gui {
 			if (((JButton) e.getSource()).getText().equals("EXIT")) {
 				Message.goodBye();
 			} else {
-				hero = null;
+				HERO = null;
 				panelMap.setVisible(false);
 				gameOverPanel.setVisible(false);
 				winPanel.setVisible(false);
 				createButton.setText("Create");
+				panelTableChoose.setVisible(false);
 				mainPanel.setVisible(true);
 				panelButtonCreateAndChoose.setVisible(true);
 			}
@@ -496,8 +512,8 @@ public class Gui {
 					} else if (classHero == null || classHero.isEmpty()) {
 						JOptionPane.showMessageDialog(null, "Choose a hero class", "Warning", JOptionPane.WARNING_MESSAGE);
 					} else {
-						hero = Console.getHero(classHero, nameHero, 1, 0, null, 0);
-						heroManager.save(hero, ConnectSQL.getConnection());
+						HERO = Console.getHero(classHero, nameHero, 1, 0, null, 0);
+						heroManager.save(HERO, ConnectSQL.getConnection());
 						createButton.setText("Start");
 						panelFieldCreate.setVisible(false);
 					}
@@ -506,14 +522,15 @@ public class Gui {
 					if (tableModel.getHeroes().isEmpty()) {
 						JOptionPane.showMessageDialog(null, "Your heroes are empty. Create a new hero", "Warning", JOptionPane.WARNING_MESSAGE);
 					} else {
-						createButton.setText("Start");
+						createButton.setText("Create");
 						panelFieldCreate.setVisible(false);
 						panelTableChoose.setVisible(true);
 					}
 				} else if (((JButton) e.getSource()).getText().equals("Start")){
-					if (hero != null) {
-						panelTableChoose.setVisible(false);
-						panelButtonCreateAndChoose.setVisible(false);
+					createHeroInfoBar();
+					MAP = new ArcadeMap();
+					if (HERO != null) {
+						mainPanel.setVisible(false);
 						createMap.run();
 					} else {
 						JOptionPane.showMessageDialog(null, "Choose a hero", "Warning", JOptionPane.WARNING_MESSAGE);
@@ -537,9 +554,11 @@ public class Gui {
 		ListSelectionModel selectionModel = allHeroesTable.getSelectionModel();
 		selectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		selectionModel.addListSelectionListener(e -> {
-			int selectRow = allHeroesTable.getSelectedRow();
-			hero = heroManager.getAllTarget().get(selectRow);
+			selectRow = allHeroesTable.getSelectedRow();
+			HERO = heroManager.getAllTarget().get(selectRow);
+			panelButtonCreateAndChoose.setVisible(false);
 			createButton.setText("Start");
+			panelButtonCreateAndChoose.setVisible(true);
 		});
 	}
 

@@ -7,7 +7,6 @@ import ua.yzcorp.view.Message;
 import java.util.NoSuchElementException;
 
 public class Run {
-	//public static int GUI = 0;
     public static void main(String[] args) {
 		ConnectSQL connectSQL = new ConnectSQL();
     	try {

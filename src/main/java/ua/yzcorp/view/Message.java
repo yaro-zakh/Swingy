@@ -61,6 +61,7 @@ public class Message {
 		System.out.format("%-7s - " + Glob.BLUE + "%-10s\n" + Glob.RESET, "☢ South", "press 'S'");
 		System.out.format("%-7s - " + Glob.BLUE + "%-10s\n" + Glob.RESET, "☢ East", "press 'D'");
 		System.out.format("%7s : " + Glob.GREEN + "%-10s\n" + Glob.RESET, "My", "INFO");
+		System.out.format("%7s : " + Glob.GREEN + "%-10s\n" + Glob.RESET, "Switch", "GUI");
 	}
 
 	public static void chooseOrCreate() {

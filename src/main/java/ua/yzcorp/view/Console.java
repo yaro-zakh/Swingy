@@ -5,6 +5,8 @@ import ua.yzcorp.model.ArcadeMap;
 import ua.yzcorp.model.ClassHero;
 import ua.yzcorp.model.Hero;
 import ua.yzcorp.model.Hero.HeroBuilder;
+import static ua.yzcorp.controller.Glob.MAP;
+
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -12,28 +14,29 @@ import java.util.regex.Pattern;
 
 public class Console {
 	private static HeroManager heroManager = new HeroManager();
+	private static Scanner scanner = new Scanner(System.in);
+
 	public static void start() {
 		Glob.onConsole();
-		Scanner scanner = new Scanner(System.in);
-		ArcadeMap arcadeMap;
 		Message.chooseOrCreate();
 		while (scanner.hasNextLine()) {
 			String tmp = scanner.nextLine();
 			if (heroManager.startListener(tmp)) {
 				return;
 			}
-			if (Glob.hero != null) {
-				Message.print(Glob.hero.toString());
+			if (Glob.HERO != null) {
+				Message.print(Glob.HERO.toString());
 				Message.startGame();
-				arcadeMap = new ArcadeMap();
-				arcadeMap.startGame();
+				MAP = new ArcadeMap();
+				if (MainGame.startGame()) {
+					return;
+				}
 			}
 		}
 		scanner.close();
 	}
 
 	public static Hero chooseHero() {
-		Scanner scanner = new Scanner(System.in);
 		HeroManager heroManager = new HeroManager();
 		List<Hero> heroes = heroManager.getAllTarget();
 		if (heroes.isEmpty()) {
@@ -74,14 +77,12 @@ public class Console {
 				}
 			}
 		}
-		scanner.close();
 		return null;
 	}
 
 	public static Hero createHero() {
 		String classHero = chooseClass();		//choose class Hero and getting information about each class
 		Message.print("Enter the name of your hero");		//create name Hero
-		Scanner scanner = new Scanner(System.in);
 		while (scanner.hasNextLine()) {
 			String nameHero = scanner.nextLine();
 			if (nameHero == null || nameHero.isEmpty()) {
@@ -89,10 +90,9 @@ public class Console {
 			} else if (!HeroManager.checkName(nameHero)) {
 				Message.print(heroManager.existsName());
 			} else {
-				return (getHero(classHero, nameHero, 1, 0, null, 0));		//method getHero create Hero with help Builder pattern
+				return (getHero(classHero, nameHero, 1, 0, null, 0));
 			}
 		}
-		scanner.close();
 		return null;
 	}
 
@@ -114,7 +114,6 @@ public class Console {
 
 	private static String chooseClass() {
 		Message.chooseClass();
-		Scanner scanner = new Scanner(System.in);
 		while (scanner.hasNextLine()) {
 			ClassHero classHero = ClassHero.getClass(scanner.nextLine());
 			switch (classHero.toString().toLowerCase()) {
@@ -134,7 +133,6 @@ public class Console {
 					break;
 			}
 		}
-		scanner.close();
 		return null;
 	}
 
@@ -142,9 +140,8 @@ public class Console {
 		Message.print("About which class you want to know the information: "
 				+ Glob.GREEN + "HUMAN, ORC, ELF " + Glob.RESET + "or " +
 				Glob.GREEN + "DWARF" + Glob.RESET);
-		Scanner scanner = new Scanner(System.in);
 		DefaultStat defaultStat = new DefaultStat();
-		Message.print(defaultStat.toString(scanner.nextLine())); //print info about class
+		Message.print(defaultStat.toString(scanner.nextLine()));
 		Message.print("Continue? [" + Glob.GREEN + "YES" + Glob.RESET +
 				" | " + Glob.GREEN + "NO" + Glob.RESET + "]");
 		String tmp = scanner.nextLine();
@@ -163,8 +160,6 @@ public class Console {
 					break;
 			}
 		}
-		scanner.close();
 		return false;
 	}
 }
-
