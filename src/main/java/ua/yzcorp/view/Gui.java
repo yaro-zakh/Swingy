@@ -50,6 +50,8 @@ public class Gui {
 	private static JPanel[][] cell;
 	private static BufferedImage heroImage;
 	private static BufferedImage enemyImage;
+	//TODO 3.3
+	private static BufferedImage wonImage;
 	private static Image image;
 	private static int imageSize;
 	private static int mapSize;
@@ -409,7 +411,14 @@ public class Gui {
 
 		boolean maybeWinner() {
 			if (heroPos[0] == 0 || heroPos[1] == 0 || heroPos[0] == mapSize - 1 || heroPos[1] == mapSize - 1) {
-				winPanel = new ImagePanel(new ImageIcon(Glob.PIC + "won.png").getImage(), frame.getWidth(), frame.getHeight());
+				try {
+					wonImage = ImageIO.read(new File(Glob.PIC + "won.png"));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				//TODO 1.1
+				image = wonImage.getScaledInstance(frame.getWidth(), frame.getHeight(), Image.SCALE_SMOOTH);
+				winPanel = new ImagePanel(image, frame.getWidth(), frame.getHeight());
 				finalView(winPanel);
 				return true;
 			} else {
@@ -592,7 +601,11 @@ public class Gui {
 
 	private static JFrame newWindow() {
 		frame = new JFrame("Swingy");
-		frame.setSize(700, 700);
+		//TODO 2.2
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		double height = screenSize.getHeight() - screenSize.getHeight() * 0.1;
+		int frameSize = Math.toIntExact(Math.round(height));
+		frame.setSize(frameSize, frameSize);
 		frame.setLayout(new BorderLayout());
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		frame.setLocationRelativeTo(null);
