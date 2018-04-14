@@ -9,7 +9,7 @@ import java.util.Scanner;
 
 public class Glob {
 	public static int GUI;
-	public static final String PIC = "/home/yaroslav/IdeaProjects/swingy/src/main/java/ua/yzcorp/pic/";
+	public static final String PIC = "src/main/java/ua/yzcorp/pic/";
 	public static String YELLOW;
 	public static String BLUE;
 	public static String GREEN;

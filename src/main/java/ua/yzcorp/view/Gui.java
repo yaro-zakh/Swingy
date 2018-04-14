@@ -20,6 +20,7 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.CookieHandler;
 import java.util.*;
 import java.util.List;
 
@@ -78,7 +79,6 @@ public class Gui {
 			mainPanel.setVisible(true);
 		}
 		if (HERO != null) {
-			createHeroInfoBar();
 			createMap.run();
 		}
 	}
@@ -183,6 +183,7 @@ public class Gui {
 		@Override
 		public void run() {
 			super.run();
+			createHeroInfoBar();
 			try {
 				mapSize = MAP.getSize();
 				imageSize = panelMap.getWidth() / mapSize;
@@ -193,6 +194,8 @@ public class Gui {
 				updateMap();
 				mainPanel.setVisible(false);
 				frame.getContentPane().add(panelMap, BorderLayout.CENTER);
+				heroInfoPanel.setVisible(false);
+				heroInfoPanel.setVisible(true);
 
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -202,7 +205,7 @@ public class Gui {
 
 	public static void createHeroInfoBar() {
 		heroInfoPanel.setLayout(new BoxLayout(heroInfoPanel, BoxLayout.Y_AXIS));
-		heroInfoPanel.setBackground(new Color(0, 0, 0, 0));
+		heroInfoPanel.setBackground(Color.WHITE);
 		progressHP.setForeground(new Color(128, 21, 21, 150));
 		progressHP.setMaximum(HERO.getMustHP());
 		progressHP.setMinimum(0);
@@ -552,7 +555,6 @@ public class Gui {
 						panelTableChoose.setVisible(true);
 					}
 				} else if (((JButton) e.getSource()).getText().equals("Start")) {
-					createHeroInfoBar();
 					MAP = new ArcadeMap();
 					if (HERO != null) {
 						mainPanel.setVisible(false);

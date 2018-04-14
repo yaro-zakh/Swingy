@@ -21,7 +21,7 @@ public class MainGame {
 	private static int [] oldPos = new int[2];
 	private static String[] levelEnemy;
 	private static char asciiHero = '⛹';
-	private static char asciiEmpty = '⛶';
+	private static char asciiEmpty = '⟡';
 
 	public static boolean startGame() {
 		updateMap();
