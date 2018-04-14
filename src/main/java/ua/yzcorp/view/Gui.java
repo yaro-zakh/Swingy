@@ -20,7 +20,6 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.net.CookieHandler;
 import java.util.*;
 import java.util.List;
 
@@ -50,8 +49,6 @@ public class Gui {
 	private static JPanel[][] cell;
 	private static BufferedImage heroImage;
 	private static BufferedImage enemyImage;
-	//TODO 3.3
-	private static BufferedImage wonImage;
 	private static Image image;
 	private static int imageSize;
 	private static int mapSize;
@@ -107,8 +104,12 @@ public class Gui {
 		newWindow();
 		createButton = new JButton("Create");
 		chooseButton = new JButton("Choose");
-		mainPanel = new ImagePanel(new ImageIcon(Glob.PIC + "main.png").getImage(), frame.getWidth(), frame.getHeight());
-		panelMap = new ImagePanel(new ImageIcon(Glob.PIC + "map.png").getImage(), frame.getWidth(), frame.getHeight());
+
+		mainPanel = new ImagePanel(setBGImage("main.png"), frame.getWidth(), frame.getHeight());
+		panelMap = new ImagePanel(setBGImage("map.png"), frame.getWidth(), frame.getHeight());
+		gameOverPanel = new ImagePanel(setBGImage("die.png"), frame.getWidth(), frame.getHeight());
+		winPanel = new ImagePanel(setBGImage("win.png"), frame.getWidth(), frame.getHeight());
+
 		mainPanel.setLayout(new GridBagLayout());
 		panelButtonCreateAndChoose.setLayout(new GridBagLayout());
 		panelButtonCreateAndChoose.setBackground(new Color(0,0,0,200));
@@ -137,13 +138,21 @@ public class Gui {
 				GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL,
 				new Insets(10, 10 , 10, 10), 0, 0 ));
 
-		gameOverPanel = new ImagePanel(new ImageIcon(Glob.PIC + "die.png").getImage(), frame.getWidth(), frame.getHeight());
-		winPanel = new ImagePanel(new ImageIcon(Glob.PIC + "won.png").getImage(), frame.getWidth(), frame.getHeight());
-
 		JMenuBar menuBar = new JMenuBar();
 		menuBar.setPreferredSize(new Dimension(frame.getWidth(), 15));
 		menuBar.add(createFileMenu());
 		frame.setJMenuBar(menuBar);
+	}
+
+	private static Image setBGImage(String name) {
+		Image newImage = null;
+		try {
+			BufferedImage bufferedImage = ImageIO.read(new File(Glob.PIC + name));
+			newImage = bufferedImage.getScaledInstance(frame.getWidth(), frame.getHeight(), Image.SCALE_SMOOTH);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return newImage;
 	}
 
 	private static JMenu createFileMenu() {
@@ -411,14 +420,6 @@ public class Gui {
 
 		boolean maybeWinner() {
 			if (heroPos[0] == 0 || heroPos[1] == 0 || heroPos[0] == mapSize - 1 || heroPos[1] == mapSize - 1) {
-				try {
-					wonImage = ImageIO.read(new File(Glob.PIC + "won.png"));
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				//TODO 1.1
-				image = wonImage.getScaledInstance(frame.getWidth(), frame.getHeight(), Image.SCALE_SMOOTH);
-				winPanel = new ImagePanel(image, frame.getWidth(), frame.getHeight());
 				finalView(winPanel);
 				return true;
 			} else {
@@ -448,7 +449,6 @@ public class Gui {
 						break;
 				}
 			} else {
-				gameOverPanel = new ImagePanel(new ImageIcon(Glob.PIC + "die.png").getImage(), frame.getWidth(), frame.getHeight());
 				finalView(gameOverPanel);
 			}
 			progressHP.setValue(HERO.getHP());
@@ -601,7 +601,6 @@ public class Gui {
 
 	private static JFrame newWindow() {
 		frame = new JFrame("Swingy");
-		//TODO 2.2
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		double height = screenSize.getHeight() - screenSize.getHeight() * 0.1;
 		int frameSize = Math.toIntExact(Math.round(height));
